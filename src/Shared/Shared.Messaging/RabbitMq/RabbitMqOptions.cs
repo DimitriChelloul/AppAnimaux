@@ -1,0 +1,22 @@
+﻿namespace Shared.Messaging.RabbitMq;
+
+public sealed class RabbitMqOptions
+{
+    // Connexion
+    public string HostName { get; init; } = "localhost";
+    public int Port { get; init; } = 5672;
+    public string UserName { get; init; } = "guest";
+    public string Password { get; init; } = "guest";
+    public string VirtualHost { get; init; } = "/";
+
+    // (optionnel) SSL - pas utilisé dans le mini code, mais OK à garder
+    public bool UseSsl { get; init; } = false;
+
+    // Exchange commun
+    public string ExchangeName { get; init; } = "appanimaux.events";
+
+    // Consumer (si le service consomme)
+    public string QueueName { get; init; } = "service.events";
+    public string[] Bindings { get; init; } = Array.Empty<string>();
+    public ushort PrefetchCount { get; init; } = 20;
+}

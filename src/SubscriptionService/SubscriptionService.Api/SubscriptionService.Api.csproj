@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Errors\Shared.Errors.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Geo\Shared.Geo.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Http\Shared.Http.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Messaging\Shared.Messaging.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Observability\Shared.Observability.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Persistence\Shared.Persistence.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Security\Shared.Security.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Semantic\Shared.Semantic.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Testing\Shared.Testing.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.TimeId\Shared.TimeId.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Validation\Shared.Validation.csproj" />
+    <ProjectReference Include="..\SubscriptionService.BLL\SubscriptionService.BLL.csproj" />
+  </ItemGroup>
+
+</Project>
