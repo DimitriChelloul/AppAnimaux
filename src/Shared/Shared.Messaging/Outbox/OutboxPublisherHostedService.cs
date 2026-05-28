@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Dapper;
-using Shared.Persistence.Abstractions;
 using System.Data;
-using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Shared.Contracts.Messaging;
 using Shared.Messaging.Abstractions;
 using Shared.Messaging.RabbitMq;
 using Shared.Messaging.Routing;
@@ -20,7 +17,6 @@ namespace Shared.Messaging.Outbox;
 
 public sealed class OutboxPublisherHostedService : BackgroundService
 {
-    private readonly Func<IDbConnection> _connectionFactory;
     private readonly IEventPublisher _publisher;
     private readonly IEventRoutingMapper _routing;
     private readonly RabbitMqOptions _mq;
@@ -29,13 +25,11 @@ public sealed class OutboxPublisherHostedService : BackgroundService
 
     public OutboxPublisherHostedService(
         IDbConnectionFactory db,
-        Func<IDbConnection> connectionFactory,
         IEventPublisher publisher,
         IEventRoutingMapper routing,
         IOptions<RabbitMqOptions> mq,
         ILogger<OutboxPublisherHostedService> log)
     {
-        _connectionFactory = connectionFactory;
         _publisher = publisher;
         _routing = routing;
         _mq = mq.Value;
