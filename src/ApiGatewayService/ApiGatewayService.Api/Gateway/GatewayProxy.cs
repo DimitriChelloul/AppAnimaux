@@ -82,6 +82,11 @@ public sealed class GatewayProxy
             return new GatewayRoute(new Uri(_routes.MediaService), IsPublic: false);
         }
 
+        if (value.StartsWith("/professionals", StringComparison.OrdinalIgnoreCase))
+        {
+            return new GatewayRoute(new Uri(_routes.ProfessionalService), IsPublic: false);
+        }
+
         return null;
     }
 

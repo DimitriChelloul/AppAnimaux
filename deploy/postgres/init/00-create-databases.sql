@@ -60,6 +60,10 @@ GRANT ALL PRIVILEGES ON DATABASE reporting_db TO app_user;
 CREATE DATABASE payment_db OWNER app_user;
 GRANT ALL PRIVILEGES ON DATABASE payment_db TO app_user;
 
+-- ProfessionalService
+CREATE DATABASE professional_db OWNER app_user;
+GRANT ALL PRIVILEGES ON DATABASE professional_db TO app_user;
+
 -- LocationService
 CREATE DATABASE location_db OWNER app_user;
 GRANT ALL PRIVILEGES ON DATABASE location_db TO app_user;
