@@ -47,6 +47,29 @@ CREATE INDEX IF NOT EXISTS idx_pets_owner_user_id ON pets (owner_user_id);
 CREATE INDEX IF NOT EXISTS idx_pets_species ON pets (species);
 
 ------------------------------------------------------------
+-- Table pet_photos : galerie de photos d'un animal
+-- Les fichiers restent dans MediaService ; PetService garde l'ordre
+-- et les metadonnees metier de la galerie.
+------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS pet_photos (
+    id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    pet_id          uuid NOT NULL,
+    media_id        uuid NOT NULL,
+    media_url       text,
+    display_order   int NOT NULL DEFAULT 0,
+    caption         text,
+    is_primary      boolean NOT NULL DEFAULT false,
+    created_at      timestamptz NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_pet_photos_pet
+        FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_pet_photos_pet_id ON pet_photos (pet_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pet_photos_media_id ON pet_photos (pet_id, media_id);
+CREATE INDEX IF NOT EXISTS idx_pet_photos_order ON pet_photos (pet_id, display_order);
+
+------------------------------------------------------------
 -- Table pet_medical_records : historique médical (simplifié)
 ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS pet_medical_records (

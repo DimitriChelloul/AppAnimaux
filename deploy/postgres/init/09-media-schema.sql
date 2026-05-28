@@ -97,6 +97,41 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_media_usages_unique
 ON media_usages (media_id, service_name, entity_type, entity_id, usage_type);
 
 ------------------------------------------------------------
+-- frontend_assets : logos, icones, illustrations et images front
+-- Separe des photos utilisateur/animaux pour permettre au client MAUI
+-- de demander les assets par cle stable et par plateforme/theme.
+------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS frontend_assets (
+    id             uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    media_id        uuid NOT NULL,
+
+    asset_key       varchar(120) NOT NULL, -- ex: app.logo.primary
+    asset_type      varchar(40) NOT NULL,  -- logo/icon/illustration/splash/banner
+    platform        varchar(30) NOT NULL DEFAULT 'all', -- all/maui/android/ios/windows
+    theme           varchar(20) NOT NULL DEFAULT 'default', -- default/light/dark
+    locale          varchar(10),
+
+    display_name    text,
+    description     text,
+    is_active       boolean NOT NULL DEFAULT true,
+    sort_order      int NOT NULL DEFAULT 0,
+
+    created_at      timestamptz NOT NULL DEFAULT now(),
+    updated_at      timestamptz NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_frontend_assets_media
+        FOREIGN KEY (media_id) REFERENCES media_files(id) ON DELETE RESTRICT,
+    CONSTRAINT ck_frontend_assets_type
+        CHECK (asset_type IN ('logo', 'icon', 'illustration', 'splash', 'banner', 'image'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_frontend_assets_key_variant
+ON frontend_assets (asset_key, platform, theme, COALESCE(locale, ''));
+
+CREATE INDEX IF NOT EXISTS idx_frontend_assets_active
+ON frontend_assets (is_active, asset_type, sort_order);
+
+------------------------------------------------------------
 -- outbox_messages : events sortants vers RabbitMQ
 ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS outbox_messages (

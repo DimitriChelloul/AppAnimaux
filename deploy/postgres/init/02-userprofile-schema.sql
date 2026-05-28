@@ -32,6 +32,32 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles (user_id);
 
 ------------------------------------------------------------
+-- Table user_profile_media : galerie de photos du profil
+-- Les fichiers restent dans MediaService ; cette table garde l'ordre
+-- et le role metier cote UserProfileService.
+------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_profile_media (
+    id              uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    profile_id      uuid NOT NULL,
+    media_id        uuid NOT NULL,
+    media_url       text,
+    usage_type      varchar(30) NOT NULL DEFAULT 'gallery', -- avatar/banner/gallery
+    display_order   int NOT NULL DEFAULT 0,
+    caption         text,
+    is_primary      boolean NOT NULL DEFAULT false,
+    created_at      timestamptz NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_user_profile_media_profile
+        FOREIGN KEY (profile_id) REFERENCES user_profiles(id) ON DELETE CASCADE,
+    CONSTRAINT ck_user_profile_media_usage
+        CHECK (usage_type IN ('avatar', 'banner', 'gallery'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_profile_media_profile_id ON user_profile_media (profile_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_profile_media_media_id ON user_profile_media (profile_id, media_id, usage_type);
+CREATE INDEX IF NOT EXISTS idx_user_profile_media_order ON user_profile_media (profile_id, display_order);
+
+------------------------------------------------------------
 -- Table user_preferences : reglages utilisateur
 ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS user_preferences (
