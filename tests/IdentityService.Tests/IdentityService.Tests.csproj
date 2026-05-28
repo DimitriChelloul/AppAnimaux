@@ -18,4 +18,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\IdentityService\IdentityService.BLL\IdentityService.BLL.csproj" />
+  </ItemGroup>
+
 </Project>

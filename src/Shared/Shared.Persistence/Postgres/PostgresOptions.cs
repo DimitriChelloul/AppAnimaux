@@ -2,5 +2,5 @@
 
 public sealed class PostgresOptions
 {
-    public string ConnectionString { get; init; } = default!;
+    public string ConnectionString { get; set; } = default!;
 }

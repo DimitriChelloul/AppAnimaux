@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
         if (string.IsNullOrWhiteSpace(cs))
             throw new InvalidOperationException("Missing connection string 'ConnectionStrings:Default'.");
 
-        services.Configure<PostgresOptions>(o => { o = new PostgresOptions { ConnectionString = cs }; });
+        services.Configure<PostgresOptions>(o => o.ConnectionString = cs);
 
         services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
 
