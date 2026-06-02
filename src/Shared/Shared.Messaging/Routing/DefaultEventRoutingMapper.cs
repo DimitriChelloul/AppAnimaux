@@ -42,6 +42,13 @@ public sealed class DefaultEventRoutingMapper : IEventRoutingMapper
         [EventTypes.Advertising.ImpressionTracked] = RoutingKeys.Advertising.ImpressionTracked,
         [EventTypes.Advertising.ClickTracked] = RoutingKeys.Advertising.ClickTracked,
         [EventTypes.Advertising.BudgetReached] = RoutingKeys.Advertising.BudgetReached,
+
+        // Help requests
+        [EventTypes.HelpRequests.HelpRequestCreated] = RoutingKeys.HelpRequests.Created,
+        [EventTypes.HelpRequests.HelpRequestPublished] = RoutingKeys.HelpRequests.Published,
+        [EventTypes.HelpRequests.HelpOfferCreated] = RoutingKeys.HelpRequests.OfferCreated,
+        [EventTypes.HelpRequests.HelpOfferAccepted] = RoutingKeys.HelpRequests.OfferAccepted,
+        [EventTypes.HelpRequests.HelpMatchCompleted] = RoutingKeys.HelpRequests.Completed,
     };
 
     public string GetRoutingKey(string eventType)

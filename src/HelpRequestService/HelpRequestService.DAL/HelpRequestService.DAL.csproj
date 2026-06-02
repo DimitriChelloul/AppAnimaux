@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.Persistence\Shared.Persistence.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Contracts\Shared.Contracts.csproj" />
     <ProjectReference Include="..\HelpRequestService.Domain\HelpRequestService.Domain.csproj" />
   </ItemGroup>
 

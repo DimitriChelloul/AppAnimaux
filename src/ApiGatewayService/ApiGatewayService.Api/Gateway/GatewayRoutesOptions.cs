@@ -8,4 +8,5 @@ public sealed class GatewayRoutesOptions
     public string MediaService { get; init; } = "http://localhost:5217";
     public string ProfessionalService { get; init; } = "http://localhost:5231";
     public string HelpRequestService { get; init; } = "http://localhost:5228";
+    public string AlertService { get; init; } = "http://localhost:5214";
 }

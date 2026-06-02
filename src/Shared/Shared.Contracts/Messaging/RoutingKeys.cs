@@ -58,7 +58,9 @@ public static class RoutingKeys
     public static class HelpRequests
     {
         public const string Created = "helprequest.created.v1";
-        public const string Accepted = "helprequest.offer_accepted.v1";
+        public const string Published = "helprequest.published.v1";
+        public const string OfferCreated = "helprequest.offer_created.v1";
+        public const string OfferAccepted = "helprequest.offer_accepted.v1";
         public const string Completed = "helprequest.completed.v1";
     }
 }

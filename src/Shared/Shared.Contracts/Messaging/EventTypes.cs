@@ -57,6 +57,8 @@ public static class EventTypes
     public static class HelpRequests
     {
         public const string HelpRequestCreated = "HelpRequest.Created";
+        public const string HelpRequestPublished = "HelpRequest.Published";
+        public const string HelpOfferCreated = "HelpOffer.Created";
         public const string HelpOfferAccepted = "HelpOffer.Accepted";
         public const string HelpMatchCompleted = "HelpMatch.Completed";
     }
