@@ -1,26 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Shared.Contracts.Events.Abstractions;
 
-namespace Shared.Contracts.Events.Credits
+namespace Shared.Contracts.Events.Credits;
+
+public record CreditsGrantedEvent : IntegrationEvent
 {
-    
+    public Guid UserId { get; init; }
+    public Guid WalletId { get; init; }
 
-    using global::Shared.Contracts.Events.Abstractions;
-    using Shared.Contracts.Events.Abstractions;
+    public long Amount { get; init; }
+    public string ReasonCode { get; init; } = default!;
 
-    public record CreditsGrantedEvent : IntegrationEvent
-    {
-        public Guid UserId { get; init; }
-        public Guid WalletId { get; init; }
+    public string? ReferenceType { get; init; }
+    public Guid? ReferenceId { get; init; }
 
-        public long Amount { get; init; } // +50, +150...
-        public string ReasonCode { get; init; } = default!; // monthly_grant / purchase / adjustment
-
-        public string? ReferenceType { get; init; } // subscription/payment/...
-        public Guid? ReferenceId { get; init; }
-
-        public long NewBalance { get; init; }
-    }
-
+    public long NewBalance { get; init; }
 }

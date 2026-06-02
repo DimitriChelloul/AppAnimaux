@@ -1,6 +1,7 @@
 using System.Text.Json;
 using AlertService.DAL.Repositories;
 using Shared.Contracts.Events.HelpRequests;
+using Shared.Contracts.Events.Messaging;
 using Shared.Contracts.Messaging;
 
 namespace AlertService.BLL.Handlers;
@@ -50,6 +51,29 @@ public sealed class HelpRequestNotificationHandler
             data,
             "high",
             ct);
+    }
+
+    public async Task HandleMessageSentAsync(MessageSentEvent evt, CancellationToken ct)
+    {
+        var data = SerializeData(new
+        {
+            evt.ConversationId,
+            evt.MessageId,
+            evt.SenderUserId,
+            route = $"/conversations/{evt.ConversationId}"
+        });
+
+        foreach (var recipientId in evt.RecipientUserIds)
+        {
+            await _notifications.CreateAsync(
+                recipientId,
+                "Nouveau message",
+                string.IsNullOrWhiteSpace(evt.ContentPreview) ? "Vous avez reçu un nouveau message." : evt.ContentPreview,
+                EventTypes.Messaging.MessageSent,
+                data,
+                "normal",
+                ct);
+        }
     }
 
     private static string SerializeData(object value)

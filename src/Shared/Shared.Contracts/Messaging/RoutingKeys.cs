@@ -63,5 +63,10 @@ public static class RoutingKeys
         public const string OfferAccepted = "helprequest.offer_accepted.v1";
         public const string Completed = "helprequest.completed.v1";
     }
+
+    public static class Messaging
+    {
+        public const string MessageSent = "messaging.message_sent.v1";
+    }
 }
 

@@ -97,6 +97,11 @@ public sealed class GatewayProxy
             return new GatewayRoute(new Uri(_routes.AlertService), IsPublic: false);
         }
 
+        if (value.StartsWith("/conversations", StringComparison.OrdinalIgnoreCase))
+        {
+            return new GatewayRoute(new Uri(_routes.PrivateMessagingService), IsPublic: false);
+        }
+
         return null;
     }
 

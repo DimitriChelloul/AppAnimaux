@@ -49,6 +49,9 @@ public sealed class DefaultEventRoutingMapper : IEventRoutingMapper
         [EventTypes.HelpRequests.HelpOfferCreated] = RoutingKeys.HelpRequests.OfferCreated,
         [EventTypes.HelpRequests.HelpOfferAccepted] = RoutingKeys.HelpRequests.OfferAccepted,
         [EventTypes.HelpRequests.HelpMatchCompleted] = RoutingKeys.HelpRequests.Completed,
+
+        // Messaging
+        [EventTypes.Messaging.MessageSent] = RoutingKeys.Messaging.MessageSent,
     };
 
     public string GetRoutingKey(string eventType)

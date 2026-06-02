@@ -31,7 +31,7 @@ public sealed class RabbitMqEventPublisher : IEventPublisher
         {
             Persistent = true,
             ContentType = "application/json",
-            Headers = headers is null ? null : new Dictionary<string, object>(headers)
+            Headers = headers is null ? null : headers.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value)
         };
 
         await channel.BasicPublishAsync(

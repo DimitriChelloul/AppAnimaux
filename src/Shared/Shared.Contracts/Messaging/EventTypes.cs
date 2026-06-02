@@ -62,5 +62,10 @@ public static class EventTypes
         public const string HelpOfferAccepted = "HelpOffer.Accepted";
         public const string HelpMatchCompleted = "HelpMatch.Completed";
     }
+
+    public static class Messaging
+    {
+        public const string MessageSent = "Message.Sent";
+    }
 }
 

@@ -63,7 +63,7 @@ public sealed class PaymentSucceededHandler : IIntegrationEventHandler<PaymentSu
             UserId = evt.UserId,
             PlanId = plan.Id,
             PlanCode = plan.Code,
-            Features = default, // Remplacez par les vraies features si nécessaire
+            Features = new PlanFeatures(),
             CurrentPeriodStart = now,
             CurrentPeriodEnd = end
         };

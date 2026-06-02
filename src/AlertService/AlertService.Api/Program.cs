@@ -4,6 +4,7 @@ using AlertService.DAL.Repositories;
 using Microsoft.OpenApi;
 using Shared.Contracts.Events.Abstractions;
 using Shared.Contracts.Events.HelpRequests;
+using Shared.Contracts.Events.Messaging;
 using Shared.Contracts.Messaging;
 using Shared.Messaging.Consuming;
 using Shared.Messaging.RabbitMq;
@@ -41,6 +42,14 @@ builder.Services.AddSingleton<IEventHandlerRegistry>(sp =>
                        ?? throw new InvalidOperationException("Envelope null");
         var handler = sp.GetRequiredService<HelpRequestNotificationHandler>();
         await handler.HandleHelpOfferAcceptedAsync(envelope.Data, ct);
+    });
+
+    registry.Register(EventTypes.Messaging.MessageSent, async (json, ct) =>
+    {
+        var envelope = System.Text.Json.JsonSerializer.Deserialize<EventEnvelope<MessageSentEvent>>(json, JsonDefaults.Options)
+                       ?? throw new InvalidOperationException("Envelope null");
+        var handler = sp.GetRequiredService<HelpRequestNotificationHandler>();
+        await handler.HandleMessageSentAsync(envelope.Data, ct);
     });
 
     return registry;

@@ -8,11 +8,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Messaging\Shared.Messaging.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Persistence\Shared.Persistence.csproj" />
     <ProjectReference Include="..\PrivateMessagingService.BLL\PrivateMessagingService.BLL.csproj" />
+    <ProjectReference Include="..\PrivateMessagingService.DAL\PrivateMessagingService.DAL.csproj" />
   </ItemGroup>
 
 </Project>

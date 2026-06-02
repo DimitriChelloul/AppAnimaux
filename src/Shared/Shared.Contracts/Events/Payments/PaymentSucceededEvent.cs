@@ -1,32 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Shared.Contracts.Events.Abstractions;
 
-namespace Shared.Contracts.Events.Payments
+namespace Shared.Contracts.Events.Payments;
+
+public record PaymentSucceededEvent : IntegrationEvent
 {
-   
+    public Guid PaymentId { get; init; }
+    public Guid UserId { get; init; }
 
-    using global::Shared.Contracts.Events.Abstractions;
-    using Shared.Contracts.Events.Abstractions;
+    public string Provider { get; init; } = "stripe";
+    public string? ProviderPaymentId { get; init; }
+    public string? ProviderChargeId { get; init; }
 
-    public record PaymentSucceededEvent : IntegrationEvent
-    {
-        public Guid PaymentId { get; init; }
-        public Guid UserId { get; init; }
+    public decimal Amount { get; init; }
+    public string Currency { get; init; } = "EUR";
 
-        public string Provider { get; init; } = "stripe";
-        public string? ProviderPaymentId { get; init; }   // pi_... / paypal txn id
-        public string? ProviderChargeId { get; init; }    // ch_...
+    public string PurposeType { get; init; } = default!;
+    public Guid? PurposeId { get; init; }
 
-        public decimal Amount { get; init; }
-        public string Currency { get; init; } = "EUR";
-
-        // Lien métier
-        public string PurposeType { get; init; } = default!; // subscription/credits/ads_boost/...
-        public Guid? PurposeId { get; init; }                // ex: subscriptionId, reservationId...
-
-        public Guid? PaymentMethodId { get; init; }
-        public string PlanCode { get; set; }
-    }
-
+    public Guid? PaymentMethodId { get; init; }
+    public string? PlanCode { get; set; }
 }
