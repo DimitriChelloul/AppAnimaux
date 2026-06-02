@@ -364,3 +364,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Common generated folders
+bin/
+obj/
+packages/
+TestResults/
+coverage/
+.env
+.env.*

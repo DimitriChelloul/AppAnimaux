@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.Persistence\Shared.Persistence.csproj" />
+    <ProjectReference Include="..\AdminService.Domain\AdminService.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
