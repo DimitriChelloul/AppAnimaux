@@ -7,4 +7,5 @@ public sealed class GatewayRoutesOptions
     public string PetService { get; init; } = "http://localhost:5035";
     public string MediaService { get; init; } = "http://localhost:5217";
     public string ProfessionalService { get; init; } = "http://localhost:5231";
+    public string HelpRequestService { get; init; } = "http://localhost:5228";
 }

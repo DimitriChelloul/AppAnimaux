@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS help_requests (
     description       text,
 
     help_type         varchar(50) NOT NULL,  -- garde/promenade/visite/covoiturage/etc.
-    status            varchar(20) NOT NULL DEFAULT 'open', -- open/matched/in_progress/completed/cancelled
+    status            varchar(20) NOT NULL DEFAULT 'draft', -- draft/published/accepted/in_progress/completed/cancelled
 
     -- localisation (simplifiée, la source de verite peut etre LocationService)
     city              text,
@@ -42,6 +42,9 @@ CREATE INDEX IF NOT EXISTS idx_help_requests_requester ON help_requests (request
 CREATE INDEX IF NOT EXISTS idx_help_requests_status ON help_requests (status);
 CREATE INDEX IF NOT EXISTS idx_help_requests_help_type ON help_requests (help_type);
 CREATE INDEX IF NOT EXISTS idx_help_requests_start_end ON help_requests (start_at, end_at);
+
+ALTER TABLE help_requests
+ALTER COLUMN status SET DEFAULT 'draft';
 
 ------------------------------------------------------------
 -- help_offers : offre d'aide faite par un utilisateur (helper)
