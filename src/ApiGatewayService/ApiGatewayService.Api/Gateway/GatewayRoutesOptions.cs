@@ -12,4 +12,5 @@ public sealed class GatewayRoutesOptions
     public string HelpRequestService { get; init; } = "http://localhost:5228";
     public string AlertService { get; init; } = "http://localhost:5214";
     public string PrivateMessagingService { get; init; } = "http://localhost:5196";
+    public string LocationService { get; init; } = "http://localhost:5186";
 }
