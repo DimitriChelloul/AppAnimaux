@@ -28,7 +28,12 @@ public sealed class RabbitMqConnection : IRabbitMqConnection, IDisposable
 
     public async Task<IConnection> GetConnectionAsync(CancellationToken ct = default)
     {
-        _connection ??= await _factory.CreateConnectionAsync(ct);
+        if (_connection is null || !_connection.IsOpen)
+        {
+            _connection?.Dispose();
+            _connection = await _factory.CreateConnectionAsync(ct);
+        }
+
         return _connection;
     }
 

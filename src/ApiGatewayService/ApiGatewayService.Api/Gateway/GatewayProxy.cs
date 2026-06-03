@@ -164,6 +164,11 @@ public sealed class GatewayProxy
             request.Headers.TryAddWithoutValidation("X-User-Roles", string.Join(",", user.Roles));
         }
 
+        if (!request.Headers.Contains("X-Correlation-Id"))
+        {
+            request.Headers.TryAddWithoutValidation("X-Correlation-Id", context.TraceIdentifier);
+        }
+
         return request;
     }
 

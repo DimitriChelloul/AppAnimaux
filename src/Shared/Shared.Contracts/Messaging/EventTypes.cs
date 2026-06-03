@@ -21,6 +21,11 @@ public static class EventTypes
         public const string RefundFailed = "Payment.RefundFailed";
     }
 
+    public static class Users
+    {
+        public const string UserRegistered = "User.Registered";
+    }
+
     public static class Subscriptions
     {
         public const string SubscriptionCreated = "Subscription.Created";

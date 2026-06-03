@@ -1,8 +1,13 @@
+using System.Text.Json;
 using IdentityService.BLL.Models;
 using IdentityService.BLL.Options;
 using IdentityService.BLL.Security;
 using IdentityService.DAL.Repositories;
 using Microsoft.Extensions.Options;
+using Shared.Contracts.Events.Abstractions;
+using Shared.Contracts.Events.Users;
+using Shared.Contracts.Messaging;
+using Shared.Messaging.Serialization;
 
 namespace IdentityService.BLL.Services;
 
@@ -10,6 +15,7 @@ public sealed class AuthService : IAuthService
 {
     private readonly IUserRepository _users;
     private readonly IRefreshTokenRepository _refreshTokens;
+    private readonly IRegistrationRepository _registrations;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IJwtTokenService _jwtTokenService;
@@ -18,6 +24,7 @@ public sealed class AuthService : IAuthService
     public AuthService(
         IUserRepository users,
         IRefreshTokenRepository refreshTokens,
+        IRegistrationRepository registrations,
         IPasswordHasher passwordHasher,
         IRefreshTokenGenerator refreshTokenGenerator,
         IJwtTokenService jwtTokenService,
@@ -25,6 +32,7 @@ public sealed class AuthService : IAuthService
     {
         _users = users;
         _refreshTokens = refreshTokens;
+        _registrations = registrations;
         _passwordHasher = passwordHasher;
         _refreshTokenGenerator = refreshTokenGenerator;
         _jwtTokenService = jwtTokenService;
@@ -42,10 +50,20 @@ public sealed class AuthService : IAuthService
             throw new InvalidOperationException("Email is already registered.");
         }
 
-        var userId = await _users.InsertAsync(email, _passwordHasher.Hash(password), ct);
-        var user = await _users.GetByIdAsync(userId, ct) ?? throw new InvalidOperationException("Registered user could not be loaded.");
+        var userId = Guid.NewGuid();
+        var passwordHash = _passwordHasher.Hash(password);
+        var registered = CreateUserRegisteredEnvelope(userId, email);
+        var user = await _registrations.RegisterAsync(
+            userId,
+            email,
+            passwordHash,
+            registered.MessageId,
+            EventTypes.Users.UserRegistered,
+            registered.Payload,
+            ipAddress,
+            userAgent,
+            ct);
 
-        await _users.AddLoginAuditAsync(user.Id, email, true, "registered", ipAddress, userAgent, ct);
         return await IssueTokensAsync(user.Id, user.Email, ipAddress, userAgent, ct);
     }
 
@@ -125,6 +143,27 @@ public sealed class AuthService : IAuthService
         await _refreshTokens.InsertAsync(userId, _refreshTokenGenerator.Hash(refreshToken), refreshExpiresAt, ipAddress, userAgent, ct);
 
         return new AuthResult(userId, email, roles, access.Token, access.ExpiresAt, refreshToken, refreshExpiresAt);
+    }
+
+    private static (Guid MessageId, string Payload) CreateUserRegisteredEnvelope(Guid userId, string email)
+    {
+        var evt = new UserRegisteredEvent
+        {
+            UserId = userId,
+            Email = email,
+            RegisteredAt = DateTimeOffset.UtcNow,
+            SourceService = "IdentityService"
+        };
+
+        var envelope = new EventEnvelope<UserRegisteredEvent>(
+            Type: EventTypes.Users.UserRegistered,
+            Version: EventTypes.V1,
+            Data: evt,
+            OccurredOn: evt.OccurredOn,
+            MessageId: evt.EventId);
+
+        var payload = JsonSerializer.Serialize(envelope, JsonDefaults.Options);
+        return (evt.EventId, payload);
     }
 
     private static string NormalizeEmail(string email)

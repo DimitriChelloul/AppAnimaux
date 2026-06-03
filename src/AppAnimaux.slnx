@@ -1,0 +1,134 @@
+<Solution>
+  <Folder Name="/AdminService/">
+    <Project Path="AdminService/AdminService.Api/AdminService.Api.csproj" />
+    <Project Path="AdminService/AdminService.BLL/AdminService.BLL.csproj" />
+    <Project Path="AdminService/AdminService.DAL/AdminService.DAL.csproj" />
+    <Project Path="AdminService/AdminService.Domain/AdminService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/AdvertisingService/">
+    <Project Path="AdvertisingService/AdvertisingService.Api/AdvertisingService.Api.csproj" />
+    <Project Path="AdvertisingService/AdvertisingService.BLL/AdvertisingService.BLL.csproj" />
+    <Project Path="AdvertisingService/AdvertisingService.DAL/AdvertisingService.DAL.csproj" />
+    <Project Path="AdvertisingService/AdvertisingService.Domain/AdvertisingService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/AlertService/">
+    <Project Path="AlertService/AlertService.Api/AlertService.Api.csproj" />
+    <Project Path="AlertService/AlertService.BLL/AlertService.BLL.csproj" />
+    <Project Path="AlertService/AlertService.DAL/AlertService.DAL.csproj" />
+    <Project Path="AlertService/AlertService.Domain/AlertService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/ApiGatewayService/">
+    <Project Path="ApiGatewayService/ApiGatewayService.Api/ApiGatewayService.Api.csproj" />
+  </Folder>
+  <Folder Name="/ChatbotService/">
+    <Project Path="ChatbotService/ChatbotService.Api/ChatbotService.Api.csproj" />
+    <Project Path="ChatbotService/ChatbotService.BLL/ChatbotService.BLL.csproj" />
+    <Project Path="ChatbotService/ChatbotService.DAL/ChatbotService.DAL.csproj" />
+    <Project Path="ChatbotService/ChatbotService.Domain/ChatbotService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/CreditService/">
+    <Project Path="CreditService/CreditService.Api/CreditService.Api.csproj" />
+    <Project Path="CreditService/CreditService.BLL/CreditService.BLL.csproj" />
+    <Project Path="CreditService/CreditService.DAL/CreditService.DAL.csproj" />
+    <Project Path="CreditService/CreditService.Domain/CreditService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/ForumService/">
+    <Project Path="ForumService/ForumService.Api/ForumService.Api.csproj" />
+    <Project Path="ForumService/ForumService.BLL/ForumService.BLL.csproj" />
+    <Project Path="ForumService/ForumService.DAL/ForumService.DAL.csproj" />
+    <Project Path="ForumService/ForumService.Domain/ForumService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/HelpRequestService/">
+    <Project Path="HelpRequestService/HelpRequestService.Api/HelpRequestService.Api.csproj" />
+    <Project Path="HelpRequestService/HelpRequestService.BLL/HelpRequestService.BLL.csproj" />
+    <Project Path="HelpRequestService/HelpRequestService.DAL/HelpRequestService.DAL.csproj" />
+    <Project Path="HelpRequestService/HelpRequestService.Domain/HelpRequestService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/IdentityService/">
+    <Project Path="IdentityService/IdentityService.Api/IdentityService.Api.csproj" />
+    <Project Path="IdentityService/IdentityService.BLL/IdentityService.BLL.csproj" />
+    <Project Path="IdentityService/IdentityService.DAL/IdentityService.DAL.csproj" />
+    <Project Path="IdentityService/IdentityService.Domain/IdentityService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/LocationService/">
+    <Project Path="LocationService/LocationService.Api/LocationService.Api.csproj" />
+    <Project Path="LocationService/LocationService.BLL/LocationService.BLL.csproj" />
+    <Project Path="LocationService/LocationService.DAL/LocationService.DAL.csproj" />
+    <Project Path="LocationService/LocationService.Domain/LocationService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/MediaService/">
+    <Project Path="MediaService/MediaService.Api/MediaService.Api.csproj" />
+    <Project Path="MediaService/MediaService.BLL/MediaService.BLL.csproj" />
+    <Project Path="MediaService/MediaService.DAL/MediaService.DAL.csproj" />
+    <Project Path="MediaService/MediaService.Domain/MediaService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/NotificationService/">
+    <Project Path="NotificationService/NotificationService.Api/NotificationService.Api.csproj" />
+    <Project Path="NotificationService/NotificationService.BLL/NotificationService.BLL.csproj" />
+    <Project Path="NotificationService/NotificationService.DAL/NotificationService.DAL.csproj" />
+    <Project Path="NotificationService/NotificationService.Domain/NotificationService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/PaymentService/">
+    <Project Path="PaymentService/PaymentService.Api/PaymentService.Api.csproj" />
+    <Project Path="PaymentService/PaymentService.BLL/PaymentService.BLL.csproj" />
+    <Project Path="PaymentService/PaymentService.DAL/PaymentService.DAL.csproj" />
+    <Project Path="PaymentService/PaymentService.Domain/PaymentService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/PetService/">
+    <Project Path="PetService/PetService.Api/PetService.Api.csproj" />
+    <Project Path="PetService/PetService.BLL/PetService.BLL.csproj" />
+    <Project Path="PetService/PetService.DAL/PetService.DAL.csproj" />
+    <Project Path="PetService/PetService.Domain/PetService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/PrivateMessagingService/">
+    <Project Path="PrivateMessagingService/PrivateMessagingService.Api/PrivateMessagingService.Api.csproj" />
+    <Project Path="PrivateMessagingService/PrivateMessagingService.BLL/PrivateMessagingService.BLL.csproj" />
+    <Project Path="PrivateMessagingService/PrivateMessagingService.DAL/PrivateMessagingService.DAL.csproj" />
+    <Project Path="PrivateMessagingService/PrivateMessagingService.Domain/PrivateMessagingService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/ProfessionalService/">
+    <Project Path="ProfessionalService/ProfessionalService.Api/ProfessionalService.Api.csproj" />
+    <Project Path="ProfessionalService/ProfessionalService.BLL/ProfessionalService.BLL.csproj" />
+    <Project Path="ProfessionalService/ProfessionalService.DAL/ProfessionalService.DAL.csproj" />
+    <Project Path="ProfessionalService/ProfessionalService.Domain/ProfessionalService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/ReportingService/">
+    <Project Path="ReportingService/ReportingService.Api/ReportingService.Api.csproj" />
+    <Project Path="ReportingService/ReportingService.BLL/ReportingService.BLL.csproj" />
+    <Project Path="ReportingService/ReportingService.DAL/ReportingService.DAL.csproj" />
+    <Project Path="ReportingService/ReportingService.Domain/ReportingService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/ReviewService/">
+    <Project Path="ReviewService/ReviewService.Api/ReviewService.Api.csproj" />
+    <Project Path="ReviewService/ReviewService.BLL/ReviewService.BLL.csproj" />
+    <Project Path="ReviewService/ReviewService.DAL/ReviewService.DAL.csproj" />
+    <Project Path="ReviewService/ReviewService.Domain/ReviewService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Shared/Shared.Config/Shared.Config.csproj" />
+    <Project Path="Shared/Shared.Contracts/Shared.Contracts.csproj" />
+    <Project Path="Shared/Shared.Errors/Shared.Errors.csproj" />
+    <Project Path="Shared/Shared.Geo/Shared.Geo.csproj" />
+    <Project Path="Shared/Shared.Http/Shared.Http.csproj" />
+    <Project Path="Shared/Shared.Messaging/Shared.Messaging.csproj" />
+    <Project Path="Shared/Shared.Observability/Shared.Observability.csproj" />
+    <Project Path="Shared/Shared.Persistence/Shared.Persistence.csproj" />
+    <Project Path="Shared/Shared.Security/Shared.Security.csproj" />
+    <Project Path="Shared/Shared.Semantic/Shared.Semantic.csproj" />
+    <Project Path="Shared/Shared.Testing/Shared.Testing.csproj" />
+    <Project Path="Shared/Shared.TimeId/Shared.TimeId.csproj" />
+    <Project Path="Shared/Shared.Validation/Shared.Validation.csproj" />
+  </Folder>
+  <Folder Name="/SubscriptionService/">
+    <Project Path="SubscriptionService/SubscriptionService.Api/SubscriptionService.Api.csproj" />
+    <Project Path="SubscriptionService/SubscriptionService.BLL/SubscriptionService.BLL.csproj" />
+    <Project Path="SubscriptionService/SubscriptionService.DAL/SubscriptionService.DAL.csproj" />
+    <Project Path="SubscriptionService/SubscriptionService.Domain/SubscriptionService.Domain.csproj" />
+  </Folder>
+  <Folder Name="/UserProfileService/">
+    <Project Path="UserProfileService/UserProfileService.Api/UserProfileService.Api.csproj" />
+    <Project Path="UserProfileService/UserProfileService.BLL/UserProfileService.BLL.csproj" />
+    <Project Path="UserProfileService/UserProfileService.DAL/UserProfileService.DAL.csproj" />
+    <Project Path="UserProfileService/UserProfileService.Domain/UserProfileService.Domain.csproj" />
+  </Folder>
+</Solution>

@@ -17,6 +17,9 @@ public sealed class DefaultEventRoutingMapper : IEventRoutingMapper
         [EventTypes.Payments.RefundSucceeded] = RoutingKeys.Payments.RefundSucceeded,
         [EventTypes.Payments.RefundFailed] = RoutingKeys.Payments.RefundFailed,
 
+        // Users
+        [EventTypes.Users.UserRegistered] = RoutingKeys.Users.Registered,
+
         // Subscriptions
         [EventTypes.Subscriptions.SubscriptionCreated] = RoutingKeys.Subscriptions.Created,
         [EventTypes.Subscriptions.SubscriptionActivated] = RoutingKeys.Subscriptions.Activated,

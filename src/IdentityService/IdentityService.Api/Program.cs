@@ -2,6 +2,10 @@ using IdentityService.BLL.Options;
 using IdentityService.BLL.Security;
 using IdentityService.BLL.Services;
 using IdentityService.DAL.Repositories;
+using Shared.Messaging.Abstractions;
+using Shared.Messaging.Outbox;
+using Shared.Messaging.RabbitMq;
+using Shared.Messaging.Routing;
 using Shared.Persistence.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,13 +16,20 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddPostgresPersistence(builder.Configuration);
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMq"));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IOutboxRepository, OutboxRepository>();
+builder.Services.AddScoped<IRegistrationRepository, RegistrationRepository>();
 builder.Services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+builder.Services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
+builder.Services.AddSingleton<IEventRoutingMapper, DefaultEventRoutingMapper>();
+builder.Services.AddHostedService<OutboxPublisherHostedService>();
 
 var app = builder.Build();
 

@@ -23,6 +23,11 @@ public static class RoutingKeys
         public const string RefundFailed = "payment.refund_failed.v1";
     }
 
+    public static class Users
+    {
+        public const string Registered = "identity.user_registered.v1";
+    }
+
     public static class Subscriptions
     {
         public const string Created = "subscription.created.v1";
