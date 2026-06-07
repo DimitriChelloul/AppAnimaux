@@ -73,6 +73,7 @@
     <Project Path="PaymentService/PaymentService.BLL/PaymentService.BLL.csproj" />
     <Project Path="PaymentService/PaymentService.DAL/PaymentService.DAL.csproj" />
     <Project Path="PaymentService/PaymentService.Domain/PaymentService.Domain.csproj" />
+    <Project Path="PaymentService/PaymentService.Tests/PaymentService.Tests.csproj" />
   </Folder>
   <Folder Name="/PetService/">
     <Project Path="PetService/PetService.Api/PetService.Api.csproj" />
