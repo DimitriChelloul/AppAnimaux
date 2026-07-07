@@ -117,6 +117,11 @@ public sealed class GatewayProxy
             return new GatewayRoute(new Uri(_routes.PrivateMessagingService), IsPublic: false);
         }
 
+        if (value.StartsWith("/api/chatbot", StringComparison.OrdinalIgnoreCase))
+        {
+            return new GatewayRoute(new Uri(_routes.ChatbotService), IsPublic: false);
+        }
+
         return null;
     }
 

@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Semantic\Shared.Semantic.csproj" />
+    <ProjectReference Include="..\ChatbotService.Domain\ChatbotService.Domain.csproj" />
     <ProjectReference Include="..\ChatbotService.DAL\ChatbotService.DAL.csproj" />
   </ItemGroup>
 

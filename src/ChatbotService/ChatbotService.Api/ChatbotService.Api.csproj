@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Semantic\Shared.Semantic.csproj" />
     <ProjectReference Include="..\ChatbotService.BLL\ChatbotService.BLL.csproj" />
   </ItemGroup>
 
