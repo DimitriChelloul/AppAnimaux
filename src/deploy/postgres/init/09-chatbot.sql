@@ -1,3 +1,8 @@
+SELECT 'CREATE DATABASE chatbot_db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chatbot_db')\gexec
+
+\connect chatbot_db
+
 CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE TABLE IF NOT EXISTS chatbot_conversations (

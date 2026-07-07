@@ -1,6 +1,6 @@
 using ChatbotService.Domain.Entities;
 using ChatbotService.Domain.Enums;
-using ChatbotService.Domain.ValueObjects;
+using Shared.Semantic;
 
 namespace ChatbotService.BLL.Services;
 
@@ -9,7 +9,7 @@ public sealed class PromptBuilder
     public string BuildPrompt(
         string question,
         IReadOnlyList<ChatMessage> history,
-        IReadOnlyList<RagSearchResult> context,
+        IReadOnlyList<SemanticSearchResult> context,
         bool requiresVeterinaryAttention)
     {
         var prompt = new System.Text.StringBuilder();

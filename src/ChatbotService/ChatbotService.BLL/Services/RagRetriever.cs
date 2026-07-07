@@ -1,6 +1,5 @@
 using ChatbotService.BLL.Abstractions;
 using ChatbotService.DAL.Abstractions;
-using ChatbotService.Domain.ValueObjects;
 using Microsoft.Extensions.Configuration;
 using Shared.Semantic;
 
@@ -19,7 +18,7 @@ public sealed class RagRetriever : IRagRetriever
         _configuration = configuration;
     }
 
-    public async Task<IReadOnlyList<RagSearchResult>> RetrieveAsync(string question, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SemanticSearchResult>> RetrieveAsync(string question, CancellationToken cancellationToken = default)
     {
         var embedding = await _embeddingProvider.GenerateEmbeddingAsync(question, cancellationToken);
         var maxChunks = ConfigurationReader.GetInt(_configuration, "Chatbot:MaxRetrievedChunks", 5);

@@ -1,8 +1,6 @@
-using Shared.Semantic;
+namespace Shared.Semantic;
 
-namespace ChatbotService.BLL.Services;
-
-public sealed class DocumentChunker : ITextChunker
+public sealed class DefaultTextChunker : ITextChunker
 {
     public IReadOnlyList<string> Chunk(string text, int chunkSize, int chunkOverlap)
     {

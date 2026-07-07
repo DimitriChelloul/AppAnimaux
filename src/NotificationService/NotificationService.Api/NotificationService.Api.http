@@ -1,6 +1,5 @@
 @NotificationService.Api_HostAddress = http://localhost:5248
 
-GET {{NotificationService.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

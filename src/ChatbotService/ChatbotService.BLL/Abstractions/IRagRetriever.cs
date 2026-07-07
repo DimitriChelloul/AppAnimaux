@@ -1,8 +1,8 @@
-using ChatbotService.Domain.ValueObjects;
+using Shared.Semantic;
 
 namespace ChatbotService.BLL.Abstractions;
 
 public interface IRagRetriever
 {
-    Task<IReadOnlyList<RagSearchResult>> RetrieveAsync(string question, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SemanticSearchResult>> RetrieveAsync(string question, CancellationToken cancellationToken = default);
 }

@@ -19,7 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IChatbotOrchestrator, ChatbotOrchestrator>();
         services.AddScoped<IRagRetriever, RagRetriever>();
         services.AddScoped<IDocumentIngestionService, DocumentIngestionService>();
-        services.AddSingleton<ITextChunker, DocumentChunker>();
+        services.AddSingleton<ITextChunker, DefaultTextChunker>();
         services.AddSingleton<PromptBuilder>();
         services.AddSingleton<AnimalSafetyClassifier>();
         services.AddSingleton<CitationBuilder>();

@@ -1,5 +1,4 @@
 using ChatbotService.DAL.Abstractions;
-using ChatbotService.Domain.ValueObjects;
 using Dapper;
 using Shared.Persistence.Abstractions;
 using Shared.Semantic;
@@ -12,17 +11,17 @@ public sealed class PgVectorSearchRepository : IVectorSearchRepository
 
     public PgVectorSearchRepository(IDbConnectionFactory db) => _db = db;
 
-    public async Task<IReadOnlyList<RagSearchResult>> SearchAsync(EmbeddingVector queryEmbedding, int limit, double minSimilarity, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SemanticSearchResult>> SearchAsync(EmbeddingVector queryEmbedding, int limit, double minSimilarity, CancellationToken cancellationToken = default)
     {
         if (queryEmbedding.Values.Count == 0)
         {
-            return Array.Empty<RagSearchResult>();
+            return Array.Empty<SemanticSearchResult>();
         }
 
         using var cn = _db.Create();
         cn.Open();
 
-        var rows = await cn.QueryAsync<RagSearchResult>(
+        var rows = await cn.QueryAsync<SemanticSearchResult>(
             """
             SELECT
                 d.id AS DocumentId,

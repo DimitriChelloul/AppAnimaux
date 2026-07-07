@@ -1,17 +1,17 @@
-using ChatbotService.Domain.ValueObjects;
 using Shared.Contracts.Chatbot;
+using Shared.Semantic;
 
 namespace ChatbotService.BLL.Services;
 
 public sealed class CitationBuilder
 {
-    public IReadOnlyList<Citation> BuildCitations(IReadOnlyList<RagSearchResult> results)
+    public IReadOnlyList<ChatbotCitation> BuildCitations(IReadOnlyList<SemanticSearchResult> results)
         => results
             .GroupBy(result => result.ChunkId)
             .Select(group =>
             {
                 var result = group.First();
-                return new Citation
+                return new ChatbotCitation
                 {
                     DocumentId = result.DocumentId,
                     ChunkId = result.ChunkId,
@@ -22,7 +22,7 @@ public sealed class CitationBuilder
             })
             .ToArray();
 
-    public IReadOnlyList<ChatbotSourceDto> ToDtos(IReadOnlyList<Citation> citations)
+    public IReadOnlyList<ChatbotSourceDto> ToDtos(IReadOnlyList<ChatbotCitation> citations)
         => citations.Select(citation => new ChatbotSourceDto
         {
             DocumentId = citation.DocumentId,
