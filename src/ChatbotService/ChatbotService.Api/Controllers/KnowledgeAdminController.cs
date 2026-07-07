@@ -16,6 +16,8 @@ public sealed class KnowledgeAdminController : ControllerBase
     }
 
     [HttpPost("documents")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<object>> AddDocument([FromBody] IngestKnowledgeDocumentRequest request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Content))
@@ -28,9 +30,7 @@ public sealed class KnowledgeAdminController : ControllerBase
     }
 
     [HttpPost("reindex")]
-    public async Task<ActionResult<object>> Reindex(CancellationToken cancellationToken)
-    {
-        var indexedDocuments = await _documentIngestionService.ReindexAsync(cancellationToken);
-        return Ok(new { indexedDocuments });
-    }
+    [ProducesResponseType(typeof(ChatbotReindexResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ChatbotReindexResponse>> Reindex(CancellationToken cancellationToken)
+        => Ok(new ChatbotReindexResponse { IndexedDocuments = await _documentIngestionService.ReindexAsync(cancellationToken) });
 }

@@ -25,6 +25,7 @@
     <Project Path="ChatbotService/ChatbotService.BLL/ChatbotService.BLL.csproj" />
     <Project Path="ChatbotService/ChatbotService.DAL/ChatbotService.DAL.csproj" />
     <Project Path="ChatbotService/ChatbotService.Domain/ChatbotService.Domain.csproj" />
+    <Project Path="ChatbotService/ChatbotService.Tests/ChatbotService.Tests.csproj" />
   </Folder>
   <Folder Name="/CreditService/">
     <Project Path="CreditService/CreditService.Api/CreditService.Api.csproj" />

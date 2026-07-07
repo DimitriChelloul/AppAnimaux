@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS chatbot_conversations (
     updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE INDEX IF NOT EXISTS ix_chatbot_conversations_user_updated
+    ON chatbot_conversations (user_id, updated_at DESC);
+
 CREATE TABLE IF NOT EXISTS chatbot_messages (
     id uuid PRIMARY KEY,
     conversation_id uuid NOT NULL REFERENCES chatbot_conversations(id) ON DELETE CASCADE,
@@ -24,6 +27,13 @@ CREATE TABLE IF NOT EXISTS chatbot_messages (
 
 CREATE INDEX IF NOT EXISTS ix_chatbot_messages_conversation_created
     ON chatbot_messages (conversation_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS chatbot_conversation_summaries (
+    conversation_id uuid PRIMARY KEY REFERENCES chatbot_conversations(id) ON DELETE CASCADE,
+    summary text NOT NULL,
+    covered_message_count integer NOT NULL DEFAULT 0,
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
 
 CREATE TABLE IF NOT EXISTS chatbot_documents (
     id uuid PRIMARY KEY,
@@ -40,6 +50,9 @@ CREATE TABLE IF NOT EXISTS chatbot_documents (
 CREATE INDEX IF NOT EXISTS ix_chatbot_documents_status
     ON chatbot_documents (status);
 
+CREATE INDEX IF NOT EXISTS ix_chatbot_documents_text
+    ON chatbot_documents USING gin (to_tsvector('simple', title || ' ' || content));
+
 CREATE TABLE IF NOT EXISTS chatbot_chunks (
     id uuid PRIMARY KEY,
     document_id uuid NOT NULL REFERENCES chatbot_documents(id) ON DELETE CASCADE,
@@ -49,6 +62,12 @@ CREATE TABLE IF NOT EXISTS chatbot_chunks (
     created_at timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT uq_chatbot_chunks_document_index UNIQUE (document_id, chunk_index)
 );
+
+CREATE INDEX IF NOT EXISTS ix_chatbot_chunks_document
+    ON chatbot_chunks (document_id, chunk_index);
+
+CREATE INDEX IF NOT EXISTS ix_chatbot_chunks_text
+    ON chatbot_chunks USING gin (to_tsvector('simple', content));
 
 CREATE TABLE IF NOT EXISTS chatbot_chunk_embeddings (
     chunk_id uuid PRIMARY KEY REFERENCES chatbot_chunks(id) ON DELETE CASCADE,
@@ -63,6 +82,18 @@ CREATE INDEX IF NOT EXISTS ix_chatbot_chunk_embeddings_vector
     USING ivfflat (embedding vector_cosine_ops)
     WITH (lists = 100);
 
+CREATE TABLE IF NOT EXISTS chatbot_embedding_cache (
+    cache_key text PRIMARY KEY,
+    input_hash text NOT NULL,
+    model text NOT NULL,
+    embedding vector(1536) NOT NULL,
+    dimensions integer NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_chatbot_embedding_cache_hash_model
+    ON chatbot_embedding_cache (input_hash, model);
+
 CREATE TABLE IF NOT EXISTS chatbot_feedback (
     id uuid PRIMARY KEY,
     conversation_id uuid NOT NULL REFERENCES chatbot_conversations(id) ON DELETE CASCADE,
@@ -73,3 +104,6 @@ CREATE TABLE IF NOT EXISTS chatbot_feedback (
     created_at timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT ck_chatbot_feedback_rating CHECK (rating IS NULL OR rating BETWEEN 1 AND 5)
 );
+
+CREATE INDEX IF NOT EXISTS ix_chatbot_feedback_conversation
+    ON chatbot_feedback (conversation_id, created_at DESC);

@@ -1,29 +1,37 @@
 using ChatbotService.BLL.Abstractions;
-using ChatbotService.DAL.Abstractions;
-using Microsoft.Extensions.Configuration;
+using ChatbotService.BLL.Options;
+using Microsoft.Extensions.Options;
 using Shared.Semantic;
 
 namespace ChatbotService.BLL.Services;
 
 public sealed class RagRetriever : IRagRetriever
 {
-    private readonly IEmbeddingProvider _embeddingProvider;
-    private readonly IVectorSearchRepository _vectorSearchRepository;
-    private readonly IConfiguration _configuration;
+    private readonly ISemanticSearchService _semanticSearchService;
+    private readonly ChunkScoringService _chunkScoringService;
+    private readonly DocumentRankingService _documentRankingService;
+    private readonly TokenBudgetManager _tokenBudgetManager;
+    private readonly RagOptions _options;
 
-    public RagRetriever(IEmbeddingProvider embeddingProvider, IVectorSearchRepository vectorSearchRepository, IConfiguration configuration)
+    public RagRetriever(
+        ISemanticSearchService semanticSearchService,
+        ChunkScoringService chunkScoringService,
+        DocumentRankingService documentRankingService,
+        TokenBudgetManager tokenBudgetManager,
+        IOptions<RagOptions> options)
     {
-        _embeddingProvider = embeddingProvider;
-        _vectorSearchRepository = vectorSearchRepository;
-        _configuration = configuration;
+        _semanticSearchService = semanticSearchService;
+        _chunkScoringService = chunkScoringService;
+        _documentRankingService = documentRankingService;
+        _tokenBudgetManager = tokenBudgetManager;
+        _options = options.Value;
     }
 
     public async Task<IReadOnlyList<SemanticSearchResult>> RetrieveAsync(string question, CancellationToken cancellationToken = default)
     {
-        var embedding = await _embeddingProvider.GenerateEmbeddingAsync(question, cancellationToken);
-        var maxChunks = ConfigurationReader.GetInt(_configuration, "Chatbot:MaxRetrievedChunks", 5);
-        var minSimilarity = ConfigurationReader.GetDouble(_configuration, "Chatbot:MinSimilarity", 0.70);
-
-        return await _vectorSearchRepository.SearchAsync(embedding, maxChunks, minSimilarity, cancellationToken);
+        var searched = await _semanticSearchService.SearchAsync(question, cancellationToken);
+        var deduplicated = _chunkScoringService.RemoveDuplicates(searched);
+        var ranked = _documentRankingService.Rank(deduplicated, _options.MaxContextChunks);
+        return _tokenBudgetManager.TakeWithinBudget(ranked, chunk => chunk.Content, _options.MaxContextTokens);
     }
 }

@@ -15,6 +15,8 @@ public static class DependencyInjection
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<IKnowledgeDocumentRepository, KnowledgeDocumentRepository>();
         services.AddScoped<IVectorSearchRepository, PgVectorSearchRepository>();
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+        services.AddScoped<IEmbeddingCacheRepository, EmbeddingCacheRepository>();
 
         return services;
     }

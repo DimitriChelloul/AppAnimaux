@@ -39,36 +39,78 @@ public sealed class ChatMessageRepository : IChatMessageRepository
 
         var rows = await cn.QueryAsync<ChatMessageRow>(
             """
-            SELECT
-                id AS Id,
-                conversation_id AS ConversationId,
-                role AS Role,
-                content AS Content,
-                requires_veterinary_attention AS RequiresVeterinaryAttention,
-                created_at AS CreatedAt
+            SELECT id AS Id, conversation_id AS ConversationId, role AS Role, content AS Content,
+                   requires_veterinary_attention AS RequiresVeterinaryAttention, created_at AS CreatedAt
             FROM chatbot_messages
             WHERE conversation_id = @ConversationId
             ORDER BY created_at DESC
             LIMIT @Limit
             """,
-            new { ConversationId = conversationId, Limit = limit });
+            new { ConversationId = conversationId, Limit = Math.Max(1, limit) });
 
-        return rows
-            .Reverse()
-            .Select(row => new ChatMessage
-            {
-                Id = row.Id,
-                ConversationId = row.ConversationId,
-                Role = ParseRole(row.Role),
-                Content = row.Content,
-                RequiresVeterinaryAttention = row.RequiresVeterinaryAttention,
-                CreatedAt = row.CreatedAt
-            })
-            .ToArray();
+        return rows.Reverse().Select(ToMessage).ToArray();
     }
 
-    private static ChatRole ParseRole(string role)
-        => Enum.TryParse<ChatRole>(role, true, out var parsed) ? parsed : ChatRole.User;
+    public async Task<IReadOnlyList<ChatMessage>> GetAllAsync(Guid conversationId, CancellationToken cancellationToken = default)
+    {
+        using var cn = _db.Create();
+        cn.Open();
+
+        var rows = await cn.QueryAsync<ChatMessageRow>(
+            """
+            SELECT id AS Id, conversation_id AS ConversationId, role AS Role, content AS Content,
+                   requires_veterinary_attention AS RequiresVeterinaryAttention, created_at AS CreatedAt
+            FROM chatbot_messages
+            WHERE conversation_id = @ConversationId
+            ORDER BY created_at ASC
+            """,
+            new { ConversationId = conversationId });
+
+        return rows.Select(ToMessage).ToArray();
+    }
+
+    public async Task<int> CountByConversationAsync(Guid conversationId, CancellationToken cancellationToken = default)
+    {
+        using var cn = _db.Create();
+        cn.Open();
+        return await cn.ExecuteScalarAsync<int>("SELECT count(*) FROM chatbot_messages WHERE conversation_id = @ConversationId", new { ConversationId = conversationId });
+    }
+
+    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        using var cn = _db.Create();
+        cn.Open();
+        return await cn.ExecuteScalarAsync<int>("SELECT count(*) FROM chatbot_messages");
+    }
+
+    public async Task DeleteOlderThanLatestAsync(Guid conversationId, int keepLatest, CancellationToken cancellationToken = default)
+    {
+        using var cn = _db.Create();
+        cn.Open();
+
+        await cn.ExecuteAsync(
+            """
+            DELETE FROM chatbot_messages
+            WHERE conversation_id = @ConversationId
+              AND id NOT IN (
+                  SELECT id FROM chatbot_messages
+                  WHERE conversation_id = @ConversationId
+                  ORDER BY created_at DESC
+                  LIMIT @KeepLatest
+              )
+            """,
+            new { ConversationId = conversationId, KeepLatest = Math.Max(1, keepLatest) });
+    }
+
+    private static ChatMessage ToMessage(ChatMessageRow row) => new()
+    {
+        Id = row.Id,
+        ConversationId = row.ConversationId,
+        Role = Enum.TryParse<ChatRole>(row.Role, true, out var parsed) ? parsed : ChatRole.User,
+        Content = row.Content,
+        RequiresVeterinaryAttention = row.RequiresVeterinaryAttention,
+        CreatedAt = row.CreatedAt
+    };
 
     private sealed record ChatMessageRow(Guid Id, Guid ConversationId, string Role, string Content, bool RequiresVeterinaryAttention, DateTimeOffset CreatedAt);
 }

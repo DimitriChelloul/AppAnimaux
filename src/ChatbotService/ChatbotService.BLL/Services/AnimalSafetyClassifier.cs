@@ -4,25 +4,11 @@ public sealed class AnimalSafetyClassifier
 {
     private static readonly string[] EmergencyTerms =
     [
-        "urgence",
-        "saignement",
-        "sang",
-        "intoxication",
-        "empoisonnement",
-        "respire mal",
-        "détresse respiratoire",
-        "detresse respiratoire",
-        "paralysie",
-        "paralysé",
-        "paralyse",
-        "convulsion",
-        "convulsions",
-        "douleur intense",
-        "vomit beaucoup",
-        "ne bouge plus",
-        "inconscient",
-        "comportement très anormal",
-        "comportement tres anormal"
+        "urgence", "saignement", "sang", "intoxication", "empoisonnement", "respire mal",
+        "détresse respiratoire", "detresse respiratoire", "paralysie", "paralysé", "paralyse",
+        "convulsion", "convulsions", "douleur intense", "vomit beaucoup", "ne bouge plus",
+        "inconscient", "comportement très anormal", "comportement tres anormal", "cyanose",
+        "abdomen gonflé", "abdomen gonfle", "chocolat", "anti limace", "mort aux rats"
     ];
 
     public bool RequiresVeterinaryAttention(string message)

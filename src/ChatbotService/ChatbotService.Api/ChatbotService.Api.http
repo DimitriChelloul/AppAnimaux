@@ -1,5 +1,28 @@
-@ChatbotService.Api_HostAddress = http://localhost:5278
+@ChatbotService.Api_HostAddress = http://localhost:5186
 
-Accept: application/json
+POST {{ChatbotService.Api_HostAddress}}/api/chatbot/ask
+Content-Type: application/json
+
+{
+  "message": "Comment fonctionne AppAnimaux pour trouver une garde ?"
+}
 
 ###
+POST {{ChatbotService.Api_HostAddress}}/api/chatbot/document
+Content-Type: application/json
+
+{
+  "title": "Guide AppAnimaux",
+  "content": "AppAnimaux permet de publier des demandes d'aide, de garde, de promenade et de covoiturage animalier.",
+  "sourceType": "helpCenter",
+  "locale": "fr-FR"
+}
+
+###
+POST {{ChatbotService.Api_HostAddress}}/api/chatbot/reindex
+
+###
+GET {{ChatbotService.Api_HostAddress}}/api/chatbot/documents
+
+###
+GET {{ChatbotService.Api_HostAddress}}/api/chatbot/health

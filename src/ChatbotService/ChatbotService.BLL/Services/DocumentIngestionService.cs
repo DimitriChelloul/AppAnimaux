@@ -1,8 +1,12 @@
 using ChatbotService.BLL.Abstractions;
+using ChatbotService.BLL.Options;
+using ChatbotService.BLL.Security;
+using ChatbotService.BLL.TextExtraction;
 using ChatbotService.DAL.Abstractions;
 using ChatbotService.Domain.Entities;
 using ChatbotService.Domain.Enums;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Shared.Contracts.Chatbot;
 using Shared.Semantic;
 
@@ -11,20 +15,29 @@ namespace ChatbotService.BLL.Services;
 public sealed class DocumentIngestionService : IDocumentIngestionService
 {
     private readonly IKnowledgeDocumentRepository _documentRepository;
-    private readonly ITextChunker _chunker;
-    private readonly IEmbeddingProvider _embeddingProvider;
-    private readonly IConfiguration _configuration;
+    private readonly ChunkingService _chunkingService;
+    private readonly EmbeddingService _embeddingService;
+    private readonly ITextExtractionService _textExtractionService;
+    private readonly InputSanitizer _sanitizer;
+    private readonly EmbeddingOptions _embeddingOptions;
+    private readonly ILogger<DocumentIngestionService> _logger;
 
     public DocumentIngestionService(
         IKnowledgeDocumentRepository documentRepository,
-        ITextChunker chunker,
-        IEmbeddingProvider embeddingProvider,
-        IConfiguration configuration)
+        ChunkingService chunkingService,
+        EmbeddingService embeddingService,
+        ITextExtractionService textExtractionService,
+        InputSanitizer sanitizer,
+        IOptions<EmbeddingOptions> embeddingOptions,
+        ILogger<DocumentIngestionService> logger)
     {
         _documentRepository = documentRepository;
-        _chunker = chunker;
-        _embeddingProvider = embeddingProvider;
-        _configuration = configuration;
+        _chunkingService = chunkingService;
+        _embeddingService = embeddingService;
+        _textExtractionService = textExtractionService;
+        _sanitizer = sanitizer;
+        _embeddingOptions = embeddingOptions.Value;
+        _logger = logger;
     }
 
     public async Task<Guid> IngestAsync(IngestKnowledgeDocumentRequest request, CancellationToken cancellationToken = default)
@@ -34,7 +47,9 @@ public sealed class DocumentIngestionService : IDocumentIngestionService
             throw new ArgumentException("Document title is required.", nameof(request));
         }
 
-        if (string.IsNullOrWhiteSpace(request.Content))
+        var extracted = _textExtractionService.Extract(request.Content, request.FileName, request.ContentType);
+        var content = _sanitizer.Sanitize(extracted, 500_000);
+        if (string.IsNullOrWhiteSpace(content))
         {
             throw new ArgumentException("Document content is required.", nameof(request));
         }
@@ -42,8 +57,8 @@ public sealed class DocumentIngestionService : IDocumentIngestionService
         var document = await _documentRepository.AddAsync(new KnowledgeDocument
         {
             Id = Guid.NewGuid(),
-            Title = request.Title.Trim(),
-            Content = request.Content.Trim(),
+            Title = _sanitizer.Sanitize(request.Title, 300),
+            Content = content,
             SourceType = ParseSourceType(request.SourceType),
             SourceUri = request.SourceUri,
             Locale = request.Locale,
@@ -70,11 +85,7 @@ public sealed class DocumentIngestionService : IDocumentIngestionService
 
     private async Task IndexDocumentAsync(KnowledgeDocument document, CancellationToken cancellationToken)
     {
-        var chunkSize = ConfigurationReader.GetInt(_configuration, "Chatbot:ChunkSize", 900);
-        var chunkOverlap = ConfigurationReader.GetInt(_configuration, "Chatbot:ChunkOverlap", 150);
-        var embeddingModel = ConfigurationReader.GetString(_configuration, "OpenAi:EmbeddingModel", "text-embedding-3-small");
-        var chunks = _chunker.Chunk(document.Content, chunkSize, chunkOverlap);
-
+        var chunks = _chunkingService.Chunk(document.Content);
         if (chunks.Count == 0)
         {
             await _documentRepository.UpdateStatusAsync(document.Id, DocumentStatus.Failed, cancellationToken);
@@ -84,10 +95,11 @@ public sealed class DocumentIngestionService : IDocumentIngestionService
         var embeddings = new List<EmbeddingVector>(chunks.Count);
         foreach (var chunk in chunks)
         {
-            embeddings.Add(await _embeddingProvider.GenerateEmbeddingAsync(chunk, cancellationToken));
+            embeddings.Add(await _embeddingService.GenerateAsync(chunk, cancellationToken));
         }
 
-        await _documentRepository.ReplaceChunksAsync(document.Id, chunks, embeddingModel, embeddings, cancellationToken);
+        await _documentRepository.ReplaceChunksAsync(document.Id, chunks, _embeddingOptions.Model, embeddings, cancellationToken);
+        _logger.LogInformation("Indexed chatbot document {DocumentId} with {ChunkCount} chunks", document.Id, chunks.Count);
     }
 
     private static KnowledgeSourceType ParseSourceType(string? value)

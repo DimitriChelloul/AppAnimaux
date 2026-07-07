@@ -11,6 +11,7 @@ services:
     volumes:
       - appanimaux-postgres-data:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./deploy/postgres/init/09-chatbot.sql:/docker-entrypoint-initdb.d/09-chatbot.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app_user -d identity_db"]
       interval: 10s

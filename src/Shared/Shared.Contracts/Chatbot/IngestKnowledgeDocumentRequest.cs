@@ -7,4 +7,6 @@ public sealed record IngestKnowledgeDocumentRequest
     public string SourceType { get; init; } = "internal";
     public string? SourceUri { get; init; }
     public string? Locale { get; init; } = "fr-FR";
+    public string FileName { get; init; } = "document.txt";
+    public string? ContentType { get; init; }
 }

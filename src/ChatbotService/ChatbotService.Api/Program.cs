@@ -15,6 +15,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRateLimiter();
+app.MapHealthChecks("/api/chatbot/healthz");
 app.MapControllers();
 
 app.Run();
