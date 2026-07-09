@@ -1,6 +1,6 @@
-namespace ApiGatewayService.Api.Gateway;
+namespace Shared.Security;
 
-internal static class Base64Url
+public static class Base64Url
 {
     public static string Encode(byte[] bytes)
     {

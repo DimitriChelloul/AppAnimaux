@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 
-namespace IdentityService.BLL.Security;
+namespace Shared.Security;
 
 public sealed class Pbkdf2PasswordHasher : IPasswordHasher
 {
     private const int SaltSize = 16;
     private const int HashSize = 32;
-    private const int Iterations = 210_000;
+    private const int Iterations = 600_000;
 
     public string Hash(string password)
     {

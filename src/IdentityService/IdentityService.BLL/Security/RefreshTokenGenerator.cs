@@ -1,3 +1,4 @@
+using Shared.Security;
 using System.Security.Cryptography;
 using System.Text;
 

@@ -1,3 +1,4 @@
+using Shared.Security;
 using IdentityService.BLL.Options;
 using IdentityService.BLL.Security;
 using IdentityService.BLL.Services;

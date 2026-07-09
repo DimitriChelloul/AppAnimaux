@@ -1,4 +1,4 @@
-namespace IdentityService.BLL.Security;
+namespace Shared.Security;
 
 public interface IPasswordHasher
 {

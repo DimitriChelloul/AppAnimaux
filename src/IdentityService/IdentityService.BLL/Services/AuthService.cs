@@ -1,3 +1,4 @@
+using Shared.Security;
 using System.Text.Json;
 using IdentityService.BLL.Models;
 using IdentityService.BLL.Options;
@@ -42,7 +43,7 @@ public sealed class AuthService : IAuthService
     public async Task<AuthResult> RegisterAsync(string email, string password, string? ipAddress, string? userAgent, CancellationToken ct)
     {
         email = NormalizeEmail(email);
-        ValidatePassword(password);
+        ValidatePassword(password, email);
 
         var existing = await _users.GetByEmailAsync(email, ct);
         if (existing is not null)
@@ -176,11 +177,12 @@ public sealed class AuthService : IAuthService
         return email.Trim().ToLowerInvariant();
     }
 
-    private static void ValidatePassword(string password)
+    private static void ValidatePassword(string password, string email)
     {
-        if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+        var result = PasswordPolicy.Default.Validate(password, email);
+        if (!result.IsValid)
         {
-            throw new ArgumentException("Password must contain at least 8 characters.", nameof(password));
+            throw new ArgumentException(string.Join(" ", result.Errors), nameof(password));
         }
     }
 }

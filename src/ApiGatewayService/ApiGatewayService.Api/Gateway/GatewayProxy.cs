@@ -1,3 +1,4 @@
+using Shared.Security;
 using Microsoft.Extensions.Options;
 
 namespace ApiGatewayService.Api.Gateway;
@@ -38,7 +39,7 @@ public sealed class GatewayProxy
             return;
         }
 
-        AuthenticatedUser? user = null;
+        CurrentUser? user = null;
         if (!route.IsPublic)
         {
             if (!_jwtValidator.TryValidate(context.Request.Headers.Authorization.ToString(), out var authenticatedUser))
@@ -125,7 +126,7 @@ public sealed class GatewayProxy
         return null;
     }
 
-    private static HttpRequestMessage CreateDownstreamRequest(HttpContext context, GatewayRoute route, AuthenticatedUser? user)
+    private static HttpRequestMessage CreateDownstreamRequest(HttpContext context, GatewayRoute route, CurrentUser? user)
     {
         var targetUri = new UriBuilder(route.BaseUri)
         {
@@ -155,12 +156,12 @@ public sealed class GatewayProxy
             }
         }
 
-        if (user is not null)
+        if (user?.UserId is Guid userId)
         {
             request.Headers.Remove("X-User-Id");
             request.Headers.Remove("X-User-Email");
             request.Headers.Remove("X-User-Roles");
-            request.Headers.TryAddWithoutValidation("X-User-Id", user.UserId.ToString());
+            request.Headers.TryAddWithoutValidation("X-User-Id", userId.ToString());
             if (!string.IsNullOrWhiteSpace(user.Email))
             {
                 request.Headers.TryAddWithoutValidation("X-User-Email", user.Email);

@@ -1,12 +1,12 @@
 using LocationService.BLL.Models;
 using LocationService.DAL.Repositories;
 using LocationService.Domain.Entities;
+using Shared.Geo;
 
 namespace LocationService.BLL.Services;
 
 public sealed class LocationAppService : ILocationAppService
 {
-    private const double EarthRadiusKm = 6371.0088;
     private readonly ILocationRepository _locations;
 
     public LocationAppService(ILocationRepository locations) => _locations = locations;
@@ -66,14 +66,10 @@ public sealed class LocationAppService : ILocationAppService
 
     public DistanceResponse CalculateDistance(DistanceRequest request)
     {
-        ValidateCoordinates(request.OriginLatitude, request.OriginLongitude);
-        ValidateCoordinates(request.TargetLatitude, request.TargetLongitude);
+        var origin = ToGeoPoint(request.OriginLatitude, request.OriginLongitude);
+        var target = ToGeoPoint(request.TargetLatitude, request.TargetLongitude);
 
-        return new DistanceResponse(CalculateDistanceKm(
-            request.OriginLatitude,
-            request.OriginLongitude,
-            request.TargetLatitude,
-            request.TargetLongitude));
+        return new DistanceResponse(Math.Round(GeoDistance.KilometersBetween(origin, target), 3));
     }
 
     public async Task<IReadOnlyCollection<NearbyLocationResponse>> FindNearbyAsync(NearbyLocationsRequest request, CancellationToken ct)
@@ -91,41 +87,19 @@ public sealed class LocationAppService : ILocationAppService
             request.Longitude + longitudeDelta,
             ct);
 
+        var origin = ToGeoPoint(request.Latitude, request.Longitude);
         return candidates
             .Select(location => new NearbyLocationResponse(
                 UserLocationResponse.From(location),
-                CalculateDistanceKm(request.Latitude, request.Longitude, location.Latitude, location.Longitude)))
+                Math.Round(GeoDistance.KilometersBetween(origin, ToGeoPoint(location.Latitude, location.Longitude)), 3)))
             .Where(location => location.DistanceKm <= request.RadiusKm)
             .OrderBy(location => location.DistanceKm)
             .ToArray();
     }
 
-    private static double CalculateDistanceKm(decimal originLatitude, decimal originLongitude, decimal targetLatitude, decimal targetLongitude)
-    {
-        var originLat = ToRadians((double)originLatitude);
-        var targetLat = ToRadians((double)targetLatitude);
-        var deltaLat = ToRadians((double)(targetLatitude - originLatitude));
-        var deltaLon = ToRadians((double)(targetLongitude - originLongitude));
+    private static GeoPoint ToGeoPoint(decimal latitude, decimal longitude) => new((double)latitude, (double)longitude);
 
-        var a = Math.Pow(Math.Sin(deltaLat / 2), 2)
-            + Math.Cos(originLat) * Math.Cos(targetLat) * Math.Pow(Math.Sin(deltaLon / 2), 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
-        return Math.Round(EarthRadiusKm * c, 3);
-    }
-
-    private static void ValidateCoordinates(decimal latitude, decimal longitude)
-    {
-        if (latitude < -90 || latitude > 90)
-        {
-            throw new ArgumentException("Latitude must be between -90 and 90.");
-        }
-
-        if (longitude < -180 || longitude > 180)
-        {
-            throw new ArgumentException("Longitude must be between -180 and 180.");
-        }
-    }
+    private static void ValidateCoordinates(decimal latitude, decimal longitude) => _ = ToGeoPoint(latitude, longitude);
 
     private static void ValidateRadius(int radiusKm)
     {

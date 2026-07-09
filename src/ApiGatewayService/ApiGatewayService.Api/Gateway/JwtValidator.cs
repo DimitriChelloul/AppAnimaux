@@ -1,3 +1,4 @@
+using Shared.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -11,9 +12,9 @@ public sealed class JwtValidator
 
     public JwtValidator(IOptions<JwtOptions> options) => _options = options.Value;
 
-    public bool TryValidate(string? authorizationHeader, out AuthenticatedUser user)
+    public bool TryValidate(string? authorizationHeader, out CurrentUser user)
     {
-        user = new AuthenticatedUser(Guid.Empty, null, Array.Empty<string>());
+        user = new CurrentUser(null, null, Array.Empty<string>());
 
         if (string.IsNullOrWhiteSpace(authorizationHeader) ||
             !authorizationHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -55,7 +56,7 @@ public sealed class JwtValidator
             return false;
         }
 
-        user = new AuthenticatedUser(userId, payload.Email, payload.Role ?? Array.Empty<string>());
+        user = new CurrentUser(userId, payload.Email, payload.Role ?? Array.Empty<string>());
         return true;
     }
 

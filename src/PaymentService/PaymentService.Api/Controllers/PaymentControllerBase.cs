@@ -1,14 +1,19 @@
-namespace PaymentService.Api.Controllers;
-
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Security;
+
+namespace PaymentService.Api.Controllers;
 
 public abstract class PaymentControllerBase : ControllerBase
 {
     protected bool TryGetUserId(out Guid userId)
     {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        if (Guid.TryParse(claim, out userId)) return true;
+        var claim = User.GetUserId();
+        if (claim.HasValue)
+        {
+            userId = claim.Value;
+            return true;
+        }
+
         return Guid.TryParse(Request.Headers["X-User-Id"].ToString(), out userId);
     }
 
