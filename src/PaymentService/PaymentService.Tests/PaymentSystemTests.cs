@@ -11,6 +11,7 @@ using PaymentService.DAL.Interfaces;
 using PaymentService.DAL.Repositories;
 using PaymentService.Domain.Entities;
 using PaymentService.Domain.Enums;
+using Shared.Messaging.Outbox;
 using Xunit;
 
 public sealed class PaymentSystemTests

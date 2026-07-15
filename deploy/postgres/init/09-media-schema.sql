@@ -1,5 +1,6 @@
 -- 01-media-schema.sql
 -- Schéma du MediaService (media_db)
+connect media_db
 -- Stocke la METADATA des fichiers. Le binaire peut être en disque/S3/minio.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

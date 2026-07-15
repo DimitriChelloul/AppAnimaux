@@ -5,6 +5,7 @@ using Shared.Contracts.Events.Abstractions;
 using Shared.Contracts.Events.HelpRequests;
 using Shared.Contracts.Messaging;
 using System.Text.Json;
+using Shared.Messaging.Outbox;
 
 namespace HelpRequestService.BLL.Services;
 

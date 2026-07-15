@@ -4,6 +4,7 @@ using AdvertisingService.DAL.Repositories;
 using AdvertisingService.Domain.Entities;
 using Shared.Contracts.Events.Advertising;
 using Shared.Contracts.Messaging;
+using Shared.Messaging.Outbox;
 
 namespace AdvertisingService.BLL.Services;
 

@@ -1,4 +1,4 @@
-using IdentityService.BLL.Security;
+using Shared.Security;
 
 namespace IdentityService.Tests;
 

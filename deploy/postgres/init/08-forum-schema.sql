@@ -1,5 +1,6 @@
 -- 01-forum-schema.sql
 -- Schéma du ForumService (forum_db)
+connect forum_db
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "citext";

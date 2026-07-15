@@ -1,5 +1,6 @@
 -- 01-admin-schema.sql
 -- Schéma du AdminService (admin_db)
+connect admin_db
 -- Objectif: modération, audit admin, sanctions, décisions, files de review
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

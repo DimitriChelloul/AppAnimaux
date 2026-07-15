@@ -10,6 +10,7 @@ using PaymentService.Domain.Entities;
 using Shared.Contracts.Events.Abstractions;
 using Shared.Contracts.Events.Payments;
 using Shared.Contracts.Messaging;
+using Shared.Messaging.Outbox;
 
 public sealed class PaymentAppService : IPaymentAppService
 {

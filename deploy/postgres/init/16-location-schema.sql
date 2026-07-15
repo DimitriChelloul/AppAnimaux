@@ -1,5 +1,6 @@
 -- 16-location-schema.sql
 -- Schéma de la base location_db (service LocationService)
+connect location_db
 
 -- Si tu es dans psql :
 -- \connect location_db;

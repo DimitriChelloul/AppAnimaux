@@ -23,4 +23,7 @@
     <ProjectReference Include="..\..\Shared\Shared.Http\Shared.Http.csproj" />
     <ProjectReference Include="..\..\Shared\Shared.Observability\Shared.Observability.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Shared/Shared.Messaging/Shared.Messaging.csproj" />
+  </ItemGroup>
 </Project>

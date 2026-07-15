@@ -1,5 +1,6 @@
 -- 01-helprequest-schema.sql
 -- Schéma du HelpRequestService (helprequest_db)
+connect helprequest_db
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -140,7 +141,9 @@ CREATE TABLE IF NOT EXISTS outbox_messages (
     occurred_on    timestamptz NOT NULL DEFAULT now(),
     processed_on   timestamptz,
     status         varchar(20) NOT NULL DEFAULT 'pending', -- pending/processed/failed
-    error          text
+    error          text,
+    attempts       integer NOT NULL DEFAULT 0,
+    next_attempt_on timestamptz
 );
 
 CREATE INDEX IF NOT EXISTS idx_outbox_status ON outbox_messages (status);

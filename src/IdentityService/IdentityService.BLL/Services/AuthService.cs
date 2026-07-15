@@ -9,6 +9,7 @@ using Shared.Contracts.Events.Abstractions;
 using Shared.Contracts.Events.Users;
 using Shared.Contracts.Messaging;
 using Shared.Messaging.Serialization;
+using Shared.Messaging.Outbox;
 
 namespace IdentityService.BLL.Services;
 
@@ -17,6 +18,7 @@ public sealed class AuthService : IAuthService
     private readonly IUserRepository _users;
     private readonly IRefreshTokenRepository _refreshTokens;
     private readonly IRegistrationRepository _registrations;
+    private readonly IOutboxRepository _outbox;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IJwtTokenService _jwtTokenService;
@@ -26,6 +28,7 @@ public sealed class AuthService : IAuthService
         IUserRepository users,
         IRefreshTokenRepository refreshTokens,
         IRegistrationRepository registrations,
+        IOutboxRepository outbox,
         IPasswordHasher passwordHasher,
         IRefreshTokenGenerator refreshTokenGenerator,
         IJwtTokenService jwtTokenService,
@@ -34,6 +37,7 @@ public sealed class AuthService : IAuthService
         _users = users;
         _refreshTokens = refreshTokens;
         _registrations = registrations;
+        _outbox = outbox;
         _passwordHasher = passwordHasher;
         _refreshTokenGenerator = refreshTokenGenerator;
         _jwtTokenService = jwtTokenService;
@@ -58,11 +62,17 @@ public sealed class AuthService : IAuthService
             userId,
             email,
             passwordHash,
+            ipAddress,
+            userAgent,
+            ct);
+
+        await _outbox.AddAsync(
             registered.MessageId,
             EventTypes.Users.UserRegistered,
             registered.Payload,
-            ipAddress,
-            userAgent,
+            aggregateType: "user",
+            aggregateId: userId,
+            registered.OccurredOn,
             ct);
 
         return await IssueTokensAsync(user.Id, user.Email, ipAddress, userAgent, ct);
@@ -146,7 +156,7 @@ public sealed class AuthService : IAuthService
         return new AuthResult(userId, email, roles, access.Token, access.ExpiresAt, refreshToken, refreshExpiresAt);
     }
 
-    private static (Guid MessageId, string Payload) CreateUserRegisteredEnvelope(Guid userId, string email)
+    private static (Guid MessageId, DateTimeOffset OccurredOn, string Payload) CreateUserRegisteredEnvelope(Guid userId, string email)
     {
         var evt = new UserRegisteredEvent
         {
@@ -164,7 +174,7 @@ public sealed class AuthService : IAuthService
             MessageId: evt.EventId);
 
         var payload = JsonSerializer.Serialize(envelope, JsonDefaults.Options);
-        return (evt.EventId, payload);
+        return (evt.EventId, evt.OccurredOn, payload);
     }
 
     private static string NormalizeEmail(string email)

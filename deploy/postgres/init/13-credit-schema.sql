@@ -1,5 +1,6 @@
 -- 01-credit-schema.sql
 -- Schéma du CreditService (credit_db)
+connect credit_db
 -- Objectif: portefeuille crédits, mouvements, et consommation
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

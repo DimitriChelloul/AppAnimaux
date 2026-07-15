@@ -1,5 +1,6 @@
 -- 01-subscription-schema.sql
 -- Schéma du SubscriptionService (subscription_db)
+connect subscription_db
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -98,8 +99,16 @@ CREATE TABLE IF NOT EXISTS outbox_messages (
     occurred_on    timestamptz NOT NULL DEFAULT now(),
     processed_on   timestamptz,
     status         varchar(20) NOT NULL DEFAULT 'pending',
-    error          text
+    error          text,
+    attempts       integer NOT NULL DEFAULT 0,
+    next_attempt_on timestamptz
 );
 
 CREATE INDEX IF NOT EXISTS idx_outbox_status ON outbox_messages (status);
 CREATE INDEX IF NOT EXISTS idx_outbox_occurred_on ON outbox_messages (occurred_on);
+
+CREATE TABLE IF NOT EXISTS inbox_messages (
+    message_id  uuid PRIMARY KEY,
+    event_type  varchar(200) NOT NULL,
+    processed_on timestamptz NOT NULL DEFAULT now()
+);

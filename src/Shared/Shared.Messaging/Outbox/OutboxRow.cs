@@ -20,6 +20,8 @@ public sealed record OutboxRow
     public string Status { get; init; } = "pending";
     public DateTimeOffset? ProcessedOn { get; init; }
     public string? Error { get; init; }
+    public int Attempts { get; init; }
+    public DateTimeOffset? NextAttemptOn { get; init; }
 }
 
 

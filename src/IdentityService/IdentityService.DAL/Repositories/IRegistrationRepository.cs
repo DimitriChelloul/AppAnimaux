@@ -8,9 +8,6 @@ public interface IRegistrationRepository
         Guid userId,
         string email,
         string passwordHash,
-        Guid messageId,
-        string eventType,
-        string payloadJson,
         string? ipAddress,
         string? userAgent,
         CancellationToken ct);

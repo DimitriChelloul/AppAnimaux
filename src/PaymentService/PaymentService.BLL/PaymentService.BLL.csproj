@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.Contracts\Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Messaging\Shared.Messaging.csproj" />
     <ProjectReference Include="..\PaymentService.DAL\PaymentService.DAL.csproj" />
     <ProjectReference Include="..\PaymentService.Domain\PaymentService.Domain.csproj" />
   </ItemGroup>

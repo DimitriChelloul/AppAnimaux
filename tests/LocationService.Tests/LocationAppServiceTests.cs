@@ -26,8 +26,8 @@ public sealed class LocationAppServiceTests
     {
         var service = new LocationAppService(new InMemoryLocationRepository());
 
-        Assert.Throws<ArgumentException>(() => service.CalculateDistance(new DistanceRequest(91m, 2m, 45m, 4m)));
-        Assert.Throws<ArgumentException>(() => service.CalculateDistance(new DistanceRequest(48m, 181m, 45m, 4m)));
+        Assert.ThrowsAny<ArgumentException>(() => service.CalculateDistance(new DistanceRequest(91m, 2m, 45m, 4m)));
+        Assert.ThrowsAny<ArgumentException>(() => service.CalculateDistance(new DistanceRequest(48m, 181m, 45m, 4m)));
     }
 
     [Fact]

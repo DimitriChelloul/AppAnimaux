@@ -78,9 +78,12 @@ public sealed class OutboxPublisherHostedService : BackgroundService
                       occurred_on     AS OccurredOn,
                       status          AS Status,
                       processed_on    AS ProcessedOn,
-                      error           AS Error
+                      error           AS Error,
+                      attempts        AS Attempts,
+                      next_attempt_on AS NextAttemptOn
                FROM outbox_messages
                WHERE status = 'pending'
+                 AND (next_attempt_on IS NULL OR next_attempt_on <= now())
                ORDER BY occurred_on
                FOR UPDATE SKIP LOCKED
                LIMIT 20
@@ -121,6 +124,8 @@ public sealed class OutboxPublisherHostedService : BackgroundService
                     UPDATE outbox_messages
                     SET status = 'processed',
                         processed_on = now(),
+                        attempts = attempts + 1,
+                        next_attempt_on = NULL,
                         error = NULL
                     WHERE id = @Id
                     """,
@@ -132,14 +137,31 @@ public sealed class OutboxPublisherHostedService : BackgroundService
             {
                 _log.LogError(ex, "Failed publishing outbox id={Id}, type={Type}", r.Id, r.Type);
 
+                var attempts = r.Attempts + 1;
+                var retryDelaySeconds = Math.Min(
+                    _mq.RetryBaseDelaySeconds * (int)Math.Pow(2, Math.Min(attempts - 1, 8)),
+                    3600);
+
                 await cn.ExecuteAsync(
                     """
                     UPDATE outbox_messages
-                       SET status = 'failed',
+                       SET status = CASE WHEN @Attempts >= @MaxAttempts THEN 'failed' ELSE 'pending' END,
+                           attempts = @Attempts,
+                           next_attempt_on = CASE
+                               WHEN @Attempts >= @MaxAttempts THEN NULL
+                               ELSE now() + (@RetryDelaySeconds * interval '1 second')
+                           END,
                            error = @Err
                        WHERE id = @Id
                     """,
-                    new { Id = r.Id, Err = ex.Message },
+                    new
+                    {
+                        Id = r.Id,
+                        Attempts = attempts,
+                        MaxAttempts = _mq.MaxPublishAttempts,
+                        RetryDelaySeconds = retryDelaySeconds,
+                        Err = ex.Message
+                    },
                     transaction: tx
                 );
             }

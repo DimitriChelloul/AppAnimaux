@@ -5,6 +5,7 @@ using PaymentService.DAL.Repositories;
 using PaymentService.Domain.Events;
 using Shared.Contracts.Events.Abstractions;
 using Shared.Contracts.Messaging;
+using Shared.Messaging.Outbox;
 
 public sealed class SubscriptionEventPublisher
 {

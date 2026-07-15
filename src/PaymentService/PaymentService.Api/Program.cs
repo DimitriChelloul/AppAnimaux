@@ -13,7 +13,9 @@ using Shared.Messaging.Abstractions;
 using Shared.Messaging.Outbox;
 using Shared.Messaging.RabbitMq;
 using Shared.Messaging.Routing;
+using Shared.Messaging.Extensions;
 using Shared.Persistence.Extensions;
+using Shared.Persistence.Transactions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,14 +25,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddPostgresPersistence(builder.Configuration);
+builder.Services.AddOutboxMessaging(builder.Configuration);
 builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
 builder.Services.Configure<AppleOptions>(builder.Configuration.GetSection("Apple"));
 builder.Services.Configure<GooglePlayOptions>(builder.Configuration.GetSection("GooglePlay"));
 builder.Services.Configure<PaymentOptions>(builder.Configuration.GetSection("Payment"));
-builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMq"));
 
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
-builder.Services.AddScoped<IOutboxRepository, OutboxRepository>();
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
 builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
 builder.Services.AddScoped<IProfessionalSubscriptionRepository, ProfessionalSubscriptionRepository>();
@@ -57,16 +58,13 @@ builder.Services.AddScoped<IValidator<ValidateGooglePurchaseDto>, ValidateGoogle
 builder.Services.AddScoped<IValidator<CreateProfessionalSubscriptionDto>, CreateProfessionalSubscriptionDtoValidator>();
 builder.Services.AddScoped<IValidator<ChangeProfessionalPlanDto>, ChangeProfessionalPlanDtoValidator>();
 
-builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
-builder.Services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
-builder.Services.AddSingleton<IEventRoutingMapper, DefaultEventRoutingMapper>();
-builder.Services.AddHostedService<OutboxPublisherHostedService>();
 
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
+app.UseTransactionalOutbox();
 app.MapControllers();
 
 app.Run();

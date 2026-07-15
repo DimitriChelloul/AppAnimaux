@@ -1,5 +1,6 @@
 -- 01-review-schema.sql
 -- Schéma du ReviewService (review_db)
+connect review_db
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

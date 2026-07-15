@@ -58,8 +58,20 @@ public sealed class DefaultEventRoutingMapper : IEventRoutingMapper
     };
 
     public string GetRoutingKey(string eventType)
-        => Map.TryGetValue(eventType, out var rk)
-            ? rk
-            : throw new InvalidOperationException($"No routing key mapping for event type '{eventType}'.");
+    {
+        if (Map.TryGetValue(eventType, out var routingKey))
+        {
+            return routingKey;
+        }
+
+        const string mutationSuffix = ".MutationCompleted";
+        if (eventType.EndsWith(mutationSuffix, StringComparison.Ordinal))
+        {
+            var service = eventType[..^mutationSuffix.Length].ToLowerInvariant();
+            return $"{service}.mutation.completed.v1";
+        }
+
+        throw new InvalidOperationException($"No routing key mapping for event type '{eventType}'.");
+    }
 }
 

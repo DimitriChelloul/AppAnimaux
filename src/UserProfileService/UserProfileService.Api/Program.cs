@@ -5,6 +5,8 @@ using Shared.Contracts.Messaging;
 using Shared.Messaging.Abstractions;
 using Shared.Messaging.Consuming;
 using Shared.Messaging.RabbitMq;
+using Shared.Messaging.Extensions;
+using Shared.Persistence.Transactions;
 using Shared.Messaging.Serialization;
 using Shared.Persistence.Extensions;
 using UserProfileService.BLL.Handlers;
@@ -17,11 +19,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddPostgresPersistence(builder.Configuration);
-builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMq"));
+builder.Services.AddOutboxMessaging(builder.Configuration);
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IUserProfileAppService, UserProfileAppService>();
 builder.Services.AddScoped<IIntegrationEventHandler<UserRegisteredEvent>, UserRegisteredHandler>();
-builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 builder.Services.AddSingleton<IEventHandlerRegistry>(sp =>
 {
     var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
@@ -46,6 +47,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
+app.UseTransactionalOutbox();
 app.MapControllers();
 
 app.Run();

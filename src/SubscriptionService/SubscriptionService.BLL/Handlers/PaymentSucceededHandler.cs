@@ -6,6 +6,7 @@ using Shared.Contracts.Events.Payments;
 using Shared.Contracts.Events.Subscriptions;
 using Shared.Contracts.Messaging;
 using Shared.Messaging.Abstractions;
+using Shared.Messaging.Outbox;
 using SubscriptionService.DAL.Repositories;
 using SubscriptionService.Domain.Entities;
 

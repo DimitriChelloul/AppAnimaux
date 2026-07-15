@@ -1,5 +1,6 @@
 -- 01-notification-schema.sql
 -- Schéma du NotificationService (notification_db)
+connect notification_db
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "citext";

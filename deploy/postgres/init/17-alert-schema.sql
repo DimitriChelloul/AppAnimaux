@@ -1,5 +1,6 @@
 -- 17-alert-schema.sql
 -- Schéma de la base alert_db (service AlertService)
+connect alert_db
 
 -- Si tu es dans psql :
 -- \connect alert_db;
@@ -181,6 +182,12 @@ CREATE INDEX IF NOT EXISTS idx_alert_outbox_status
 
 CREATE INDEX IF NOT EXISTS idx_alert_outbox_occurred_on
     ON outbox_messages (occurred_on);
+
+CREATE TABLE IF NOT EXISTS inbox_messages (
+    message_id  uuid PRIMARY KEY,
+    event_type  varchar(200) NOT NULL,
+    processed_on timestamptz NOT NULL DEFAULT now()
+);
 
 ------------------------------------------------------------
 -- Données de base : types d’alertes (id stables)

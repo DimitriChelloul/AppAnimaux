@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Shared.Messaging.Outbox;
 using PrivateMessagingService.BLL.Models;
 using PrivateMessagingService.DAL.Repositories;
 using PrivateMessagingService.Domain.Entities;

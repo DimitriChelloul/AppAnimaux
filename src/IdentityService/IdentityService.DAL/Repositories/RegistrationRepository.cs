@@ -14,9 +14,6 @@ public sealed class RegistrationRepository : IRegistrationRepository
         Guid userId,
         string email,
         string passwordHash,
-        Guid messageId,
-        string eventType,
-        string payloadJson,
         string? ipAddress,
         string? userAgent,
         CancellationToken ct)
@@ -46,21 +43,6 @@ public sealed class RegistrationRepository : IRegistrationRepository
                     Email = email,
                     IpAddress = ipAddress,
                     UserAgent = userAgent
-                },
-                tx);
-
-            await cn.ExecuteAsync(
-                """
-                INSERT INTO outbox_messages(message_id, aggregate_type, aggregate_id, type, payload, occurred_on, status)
-                VALUES (@MessageId, 'user', @UserId, @EventType, CAST(@Payload AS jsonb), now(), 'pending')
-                ON CONFLICT (message_id) DO NOTHING
-                """,
-                new
-                {
-                    MessageId = messageId,
-                    UserId = userId,
-                    EventType = eventType,
-                    Payload = payloadJson
                 },
                 tx);
 

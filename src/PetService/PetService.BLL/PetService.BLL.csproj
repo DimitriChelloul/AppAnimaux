@@ -15,4 +15,7 @@
     <ProjectReference Include="..\..\Shared\Shared.Geo\Shared.Geo.csproj" />
     <ProjectReference Include="..\..\Shared\Shared.Security\Shared.Security.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Shared/Shared.Messaging/Shared.Messaging.csproj" />
+  </ItemGroup>
 </Project>

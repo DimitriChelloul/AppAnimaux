@@ -1,14 +1,20 @@
 using UserProfileService.BLL.Models;
 using UserProfileService.DAL.Repositories;
 using UserProfileService.Domain.Entities;
+using Shared.Messaging.Outbox;
 
 namespace UserProfileService.BLL.Services;
 
 public sealed class UserProfileAppService : IUserProfileAppService
 {
     private readonly IUserProfileRepository _profiles;
+    private readonly IOutboxRepository _outbox;
 
-    public UserProfileAppService(IUserProfileRepository profiles) => _profiles = profiles;
+    public UserProfileAppService(IUserProfileRepository profiles, IOutboxRepository outbox)
+    {
+        _profiles = profiles;
+        _outbox = outbox;
+    }
 
     public async Task<UserProfileResponse?> GetMineAsync(Guid userId, CancellationToken ct)
     {
@@ -44,6 +50,7 @@ public sealed class UserProfileAppService : IUserProfileAppService
 
         var profile = await _profiles.GetByIdAsync(profileId, ct) ?? throw new InvalidOperationException("Profile could not be loaded.");
         var media = await _profiles.GetMediaAsync(profile.Id, ct);
+        await AddOutboxAsync("Upserted", new { ProfileId = profileId, UserId = userId }, profileId, ct);
         return UserProfileResponse.From(profile, media);
     }
 
@@ -51,7 +58,9 @@ public sealed class UserProfileAppService : IUserProfileAppService
     {
         var profile = await EnsureProfileAsync(userId, ct);
         var usageType = NormalizeUsageType(request.UsageType);
-        return await _profiles.AddMediaAsync(profile.Id, request.MediaId, request.MediaUrl, usageType, request.DisplayOrder, request.Caption, request.IsPrimary, ct);
+        var media = await _profiles.AddMediaAsync(profile.Id, request.MediaId, request.MediaUrl, usageType, request.DisplayOrder, request.Caption, request.IsPrimary, ct);
+        await AddOutboxAsync("PhotoAdded", new { ProfileId = profile.Id, media.Id, request.MediaId }, profile.Id, ct);
+        return media;
     }
 
     public async Task<bool> SetAvatarAsync(Guid userId, Guid mediaId, string mediaUrl, CancellationToken ct)
@@ -59,6 +68,7 @@ public sealed class UserProfileAppService : IUserProfileAppService
         var profile = await EnsureProfileAsync(userId, ct);
         await _profiles.AddMediaAsync(profile.Id, mediaId, mediaUrl, "avatar", 0, null, true, ct);
         await _profiles.SetAvatarAsync(profile.Id, mediaId, mediaUrl, ct);
+        await AddOutboxAsync("AvatarChanged", new { ProfileId = profile.Id, MediaId = mediaId }, profile.Id, ct);
         return true;
     }
 
@@ -67,7 +77,14 @@ public sealed class UserProfileAppService : IUserProfileAppService
         var profile = await EnsureProfileAsync(userId, ct);
         await _profiles.AddMediaAsync(profile.Id, mediaId, mediaUrl, "banner", 0, null, true, ct);
         await _profiles.SetBannerAsync(profile.Id, mediaId, mediaUrl, ct);
+        await AddOutboxAsync("BannerChanged", new { ProfileId = profile.Id, MediaId = mediaId }, profile.Id, ct);
         return true;
+    }
+
+    private async Task AddOutboxAsync(string eventName, object data, Guid aggregateId, CancellationToken ct)
+    {
+        var message = OutboxMessageFactory.Create("UserProfileService", eventName, data);
+        await _outbox.AddAsync(message.MessageId, message.EventType, message.Payload, "user_profile", aggregateId, message.OccurredOn, ct);
     }
 
     private async Task<UserProfile> EnsureProfileAsync(Guid userId, CancellationToken ct)

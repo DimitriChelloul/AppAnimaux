@@ -1,5 +1,6 @@
 -- 01-reporting-schema.sql
 -- Schéma du ReportingService (reporting_db)
+connect reporting_db
 -- Event store léger + métriques agrégées
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

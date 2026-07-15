@@ -1,5 +1,6 @@
 -- 01-userprofile-schema.sql
 -- Schéma du UserProfileService (userprofile_db)
+connect userprofile_db
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "citext";
@@ -93,3 +94,9 @@ CREATE TABLE IF NOT EXISTS outbox_messages (
 
 CREATE INDEX IF NOT EXISTS idx_outbox_status ON outbox_messages (status);
 CREATE INDEX IF NOT EXISTS idx_outbox_created ON outbox_messages (occurred_on);
+
+CREATE TABLE IF NOT EXISTS inbox_messages (
+    message_id  uuid PRIMARY KEY,
+    event_type  varchar(200) NOT NULL,
+    processed_on timestamptz NOT NULL DEFAULT now()
+);

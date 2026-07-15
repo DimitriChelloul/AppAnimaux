@@ -6,9 +6,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Dapper;
 using Shared.Contracts.Events.Abstractions;
 using Shared.Messaging.Consuming;
 using Shared.Messaging.Serialization;
+using Shared.Persistence.Abstractions;
+using Shared.Persistence.Transactions;
 
 public sealed class RabbitMqConsumerHostedService : BackgroundService
 {
@@ -16,6 +19,7 @@ public sealed class RabbitMqConsumerHostedService : BackgroundService
     private readonly RabbitMqOptions _opt;
     private readonly IEventHandlerRegistry _registry;
     private readonly ILogger<RabbitMqConsumerHostedService> _log;
+    private readonly IDbConnectionFactory _db;
 
     private IChannel? _channel;
     private string? _consumerTag;
@@ -24,11 +28,13 @@ public sealed class RabbitMqConsumerHostedService : BackgroundService
         IRabbitMqConnection conn,
         IOptions<RabbitMqOptions> opt,
         IEventHandlerRegistry registry,
+        IDbConnectionFactory db,
         ILogger<RabbitMqConsumerHostedService> log)
     {
         _conn = conn;
         _opt = opt.Value;
         _registry = registry;
+        _db = db;
         _log = log;
     }
 
@@ -45,12 +51,38 @@ public sealed class RabbitMqConsumerHostedService : BackgroundService
             arguments: null,
             cancellationToken: stoppingToken);
 
+        await _channel.ExchangeDeclareAsync(
+            exchange: _opt.DeadLetterExchangeName,
+            type: ExchangeType.Topic,
+            durable: true,
+            autoDelete: false,
+            arguments: null,
+            cancellationToken: stoppingToken);
+
+        await _channel.QueueDeclareAsync(
+            queue: _opt.DeadLetterQueueName,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null,
+            cancellationToken: stoppingToken);
+
+        await _channel.QueueBindAsync(
+            _opt.DeadLetterQueueName,
+            _opt.DeadLetterExchangeName,
+            "#",
+            arguments: null,
+            cancellationToken: stoppingToken);
+
         await _channel.QueueDeclareAsync(
             queue: _opt.QueueName,
             durable: true,
             exclusive: false,
             autoDelete: false,
-            arguments: null,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = _opt.DeadLetterExchangeName
+            },
             cancellationToken: stoppingToken);
 
         foreach (var binding in _opt.Bindings ?? Array.Empty<string>())
@@ -74,7 +106,19 @@ public sealed class RabbitMqConsumerHostedService : BackgroundService
                 if (!_registry.TryGet(env.Type, out var handler))
                     throw new InvalidOperationException($"No handler for event type '{env.Type}'");
 
-                await handler(json, stoppingToken);
+                await TransactionalOutbox.ExecuteAsync(async () =>
+                {
+                    if (!await TryBeginProcessingAsync(env.MessageId, env.Type, stoppingToken))
+                    {
+                        _log.LogInformation(
+                            "Ignoring duplicate message {MessageId} ({EventType})",
+                            env.MessageId,
+                            env.Type);
+                        return;
+                    }
+
+                    await handler(json, stoppingToken);
+                });
 
                 await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
             }
@@ -90,6 +134,23 @@ public sealed class RabbitMqConsumerHostedService : BackgroundService
             autoAck: false,
             consumer: consumer,
             cancellationToken: stoppingToken);
+    }
+
+    private async Task<bool> TryBeginProcessingAsync(Guid messageId, string eventType, CancellationToken ct)
+    {
+        using var cn = _db.Create();
+        cn.Open();
+
+        var inserted = await cn.ExecuteScalarAsync<Guid?>(
+            """
+            INSERT INTO inbox_messages(message_id, event_type, processed_on)
+            VALUES (@MessageId, @EventType, now())
+            ON CONFLICT (message_id) DO NOTHING
+            RETURNING message_id
+            """,
+            new { MessageId = messageId, EventType = eventType });
+
+        return inserted.HasValue;
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

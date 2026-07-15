@@ -8,6 +8,8 @@ using Shared.Contracts.Events.Messaging;
 using Shared.Contracts.Messaging;
 using Shared.Messaging.Consuming;
 using Shared.Messaging.RabbitMq;
+using Shared.Messaging.Extensions;
+using Shared.Persistence.Transactions;
 using Shared.Messaging.Serialization;
 using Shared.Persistence.Extensions;
 
@@ -22,8 +24,7 @@ builder.Services.AddSingleton<INotificationRepository, NotificationRepository>()
 builder.Services.AddScoped<INotificationAppService, NotificationAppService>();
 builder.Services.AddSingleton<HelpRequestNotificationHandler>();
 
-builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMq"));
-builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+builder.Services.AddOutboxMessaging(builder.Configuration);
 builder.Services.AddSingleton<IEventHandlerRegistry>(sp =>
 {
     var registry = new EventHandlerRegistry();
@@ -61,6 +62,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
+app.UseTransactionalOutbox();
+app.UseGenericMutationOutbox("AlertService");
 app.MapControllers();
 
 app.Run();

@@ -19,4 +19,8 @@ public sealed class RabbitMqOptions
     public string QueueName { get; init; } = "service.events";
     public string[] Bindings { get; init; } = Array.Empty<string>();
     public ushort PrefetchCount { get; init; } = 20;
+    public int MaxPublishAttempts { get; init; } = 10;
+    public int RetryBaseDelaySeconds { get; init; } = 5;
+    public string DeadLetterExchangeName => $"{ExchangeName}.dead-letter";
+    public string DeadLetterQueueName => $"{QueueName}.dead-letter";
 }

@@ -17,7 +17,11 @@ public sealed class RabbitMqEventPublisher : IEventPublisher
         CancellationToken ct = default)
     {
         var connection = await _conn.GetConnectionAsync(ct);
-        await using var channel = await connection.CreateChannelAsync(null, ct);
+        await using var channel = await connection.CreateChannelAsync(
+            new CreateChannelOptions(
+                publisherConfirmationsEnabled: true,
+                publisherConfirmationTrackingEnabled: true),
+            ct);
 
         await channel.ExchangeDeclareAsync(
             exchange: exchange,
@@ -37,7 +41,7 @@ public sealed class RabbitMqEventPublisher : IEventPublisher
         await channel.BasicPublishAsync(
             exchange: exchange,
             routingKey: routingKey,
-            mandatory: false,
+            mandatory: true,
             basicProperties: props,
             body: body,
             cancellationToken: ct);
