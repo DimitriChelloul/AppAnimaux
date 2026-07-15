@@ -5,21 +5,17 @@ using PaymentService.BLL.Interfaces;
 using PaymentService.DAL.Interfaces;
 using PaymentService.Domain.Entities;
 using PaymentService.Domain.Enums;
-using PaymentService.Domain.Events;
 
 public sealed class UserSubscriptionService : IUserSubscriptionService
 {
     private readonly IUserSubscriptionRepository _subscriptions;
     private readonly ISubscriptionPlanRepository _plans;
-    private readonly ISubscriptionEntitlementService _entitlements;
-    private readonly SubscriptionEventPublisher _events;
 
-    public UserSubscriptionService(IUserSubscriptionRepository subscriptions, ISubscriptionPlanRepository plans, ISubscriptionEntitlementService entitlements, SubscriptionEventPublisher events)
+    public UserSubscriptionService(IUserSubscriptionRepository subscriptions, ISubscriptionPlanRepository plans)
+
     {
         _subscriptions = subscriptions;
         _plans = plans;
-        _entitlements = entitlements;
-        _events = events;
     }
 
     public async Task<SubscriptionStatusDto> GetMineAsync(Guid userId, CancellationToken ct)
@@ -51,17 +47,6 @@ public sealed class UserSubscriptionService : IUserSubscriptionService
         sub.AutoRenew = true;
         await _subscriptions.UpsertAsync(sub, ct);
 
-        var entitlements = await _entitlements.GetByPlanAsync(plan.Id, ct);
-        await _events.PublishAsync(SubscriptionEventPublisher.EventTypeFor(new UserSubscriptionCreatedEvent()), new UserSubscriptionCreatedEvent
-        {
-            SourceService = "PaymentService",
-            OwnerType = SubscriptionOwnerType.User,
-            OwnerId = dto.UserId,
-            SubscriptionId = sub.Id,
-            PlanCode = plan.Code,
-            Status = sub.Status,
-            Entitlements = entitlements
-        }, "user_subscription", sub.Id, ct);
         return Map(dto.UserId, plan.Code, sub);
     }
 
@@ -73,16 +58,6 @@ public sealed class UserSubscriptionService : IUserSubscriptionService
         sub.CanceledAt = DateTimeOffset.UtcNow;
         await _subscriptions.UpsertAsync(sub, ct);
         var plan = await _plans.GetByIdAsync(sub.PlanId, ct) ?? throw new InvalidOperationException("Plan not found.");
-        await _events.PublishAsync(SubscriptionEventPublisher.EventTypeFor(new UserSubscriptionCanceledEvent()), new UserSubscriptionCanceledEvent
-        {
-            SourceService = "PaymentService",
-            OwnerType = SubscriptionOwnerType.User,
-            OwnerId = userId,
-            SubscriptionId = sub.Id,
-            PlanCode = plan.Code,
-            Status = sub.Status,
-            Entitlements = await _entitlements.GetByPlanAsync(plan.Id, ct)
-        }, "user_subscription", sub.Id, ct);
         return Map(userId, plan.Code, sub);
     }
 

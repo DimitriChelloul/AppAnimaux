@@ -20,7 +20,6 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseTransactionalOutbox();
-app.UseGenericMutationOutbox("ForumService");
 app.MapControllers();
 
 app.Run();

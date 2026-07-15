@@ -1,4 +1,4 @@
-﻿namespace Shared.Messaging.RabbitMq;
+namespace Shared.Messaging.RabbitMq;
 
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -41,6 +41,7 @@ public sealed class RabbitMqConnection : IRabbitMqConnection, IDisposable
                 {
                     _connection?.Dispose();
                     _connection = await _factory.CreateConnectionAsync(ct);
+
                 }
             }
             finally

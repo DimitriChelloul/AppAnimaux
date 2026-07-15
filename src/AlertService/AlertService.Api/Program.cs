@@ -63,7 +63,6 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseTransactionalOutbox();
-app.UseGenericMutationOutbox("AlertService");
 app.MapControllers();
 
 app.Run();

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -64,12 +64,6 @@ public sealed class DefaultEventRoutingMapper : IEventRoutingMapper
             return routingKey;
         }
 
-        const string mutationSuffix = ".MutationCompleted";
-        if (eventType.EndsWith(mutationSuffix, StringComparison.Ordinal))
-        {
-            var service = eventType[..^mutationSuffix.Length].ToLowerInvariant();
-            return $"{service}.mutation.completed.v1";
-        }
 
         throw new InvalidOperationException($"No routing key mapping for event type '{eventType}'.");
     }

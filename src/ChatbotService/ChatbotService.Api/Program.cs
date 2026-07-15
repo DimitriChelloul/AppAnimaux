@@ -21,7 +21,6 @@ app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.MapHealthChecks("/api/chatbot/healthz");
 app.UseTransactionalOutbox();
-app.UseGenericMutationOutbox("ChatbotService");
 app.MapControllers();
 
 app.Run();

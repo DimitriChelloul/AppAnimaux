@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Messaging.Abstractions;
@@ -20,11 +19,9 @@ public static class OutboxMessagingExtensions
         services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
         services.AddSingleton<IEventRoutingMapper, DefaultEventRoutingMapper>();
         services.AddHostedService<OutboxPublisherHostedService>();
+        services.AddSingleton<MessagingMaintenance>();
+        services.AddHostedService<MessagingMaintenanceHostedService>();
         return services;
     }
 
-    public static IApplicationBuilder UseGenericMutationOutbox(
-        this IApplicationBuilder app,
-        string serviceName)
-        => app.UseMiddleware<GenericMutationOutboxMiddleware>(serviceName);
 }

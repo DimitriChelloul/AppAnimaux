@@ -1,20 +1,14 @@
 using ProfessionalService.BLL.Models;
 using ProfessionalService.DAL.Repositories;
 using ProfessionalService.Domain.Entities;
-using Shared.Messaging.Outbox;
 
 namespace ProfessionalService.BLL.Services;
 
 public sealed class ProfessionalAppService : IProfessionalAppService
 {
     private readonly IProfessionalRepository _professionals;
-    private readonly IOutboxRepository _outbox;
 
-    public ProfessionalAppService(IProfessionalRepository professionals, IOutboxRepository outbox)
-    {
-        _professionals = professionals;
-        _outbox = outbox;
-    }
+    public ProfessionalAppService(IProfessionalRepository professionals) => _professionals = professionals;
 
     public Task<IReadOnlyCollection<Professional>> SearchAsync(ProfessionalSearchRequest request, CancellationToken ct)
     {
@@ -67,30 +61,13 @@ public sealed class ProfessionalAppService : IProfessionalAppService
             ct);
 
         var result = await GetAsync(id, ct) ?? throw new InvalidOperationException("Professional profile could not be loaded.");
-        await AddOutboxAsync(
-            existing is null ? "ProfessionalCreated" : "ProfessionalUpdated",
-            id,
-            new
-            {
-                professionalId = id,
-                userId,
-                result.Professional.BusinessName,
-                result.Professional.Category,
-                result.Professional.City
-            },
-            ct);
         return result;
     }
 
     public async Task<bool> DeleteMineAsync(Guid userId, Guid id, CancellationToken ct)
     {
         var deleted = await _professionals.DeleteAsync(id, userId, ct);
-        if (deleted)
-        {
-            await AddOutboxAsync("ProfessionalDeleted", id, new { professionalId = id, userId }, ct);
-        }
-
-        return deleted;
+return deleted;
     }
 
     public async Task<ProfessionalServiceItem?> AddServiceAsync(Guid userId, Guid professionalId, AddProfessionalServiceRequest request, CancellationToken ct)
@@ -102,11 +79,6 @@ public sealed class ProfessionalAppService : IProfessionalAppService
 
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ServiceName);
         var service = await _professionals.AddServiceAsync(professionalId, request.ServiceName.Trim(), NormalizeOptional(request.Description), NormalizeOptional(request.PriceRange), request.DisplayOrder, ct);
-        await AddOutboxAsync(
-            "ProfessionalServiceAdded",
-            professionalId,
-            new { professionalId, serviceId = service.Id, service.ServiceName, service.PriceRange },
-            ct);
         return service;
     }
 
@@ -123,11 +95,6 @@ public sealed class ProfessionalAppService : IProfessionalAppService
         }
 
         var photo = await _professionals.AddPhotoAsync(professionalId, request.MediaId, request.MediaUrl, request.DisplayOrder, request.Caption, request.IsPrimary, ct);
-        await AddOutboxAsync(
-            "ProfessionalPhotoAdded",
-            professionalId,
-            new { professionalId, photoId = photo.Id, photo.MediaId, photo.IsPrimary },
-            ct);
         return photo;
     }
 
@@ -136,36 +103,13 @@ public sealed class ProfessionalAppService : IProfessionalAppService
         var plan = NormalizePlan(request.Plan);
         var status = NormalizeStatus(request.Status);
         var updated = await _professionals.SetSubscriptionAsync(professionalId, plan, status, ct);
-        if (updated)
-        {
-            await AddOutboxAsync("ProfessionalSubscriptionChanged", professionalId, new { professionalId, plan, status }, ct);
-        }
-
-        return updated;
+return updated;
     }
 
     public async Task<bool> SetVerifiedAsync(Guid professionalId, bool isVerified, CancellationToken ct)
     {
         var updated = await _professionals.SetVerifiedAsync(professionalId, isVerified, ct);
-        if (updated)
-        {
-            await AddOutboxAsync("ProfessionalVerificationChanged", professionalId, new { professionalId, isVerified }, ct);
-        }
-
-        return updated;
-    }
-
-    private async Task AddOutboxAsync(string eventName, Guid aggregateId, object data, CancellationToken ct)
-    {
-        var message = OutboxMessageFactory.Create("ProfessionalService", eventName, data);
-        await _outbox.AddAsync(
-            message.MessageId,
-            message.EventType,
-            message.Payload,
-            "professional",
-            aggregateId,
-            message.OccurredOn,
-            ct);
+return updated;
     }
 
     private async Task<ProfessionalDetailsResponse> BuildDetailsAsync(Professional professional, CancellationToken ct)

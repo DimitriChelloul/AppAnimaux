@@ -1,12 +1,7 @@
-﻿namespace SubscriptionService.BLL.Handlers;
+namespace SubscriptionService.BLL.Handlers;
 
-using System.Text.Json;
-using Shared.Contracts.Events.Abstractions;
 using Shared.Contracts.Events.Payments;
-using Shared.Contracts.Events.Subscriptions;
-using Shared.Contracts.Messaging;
 using Shared.Messaging.Abstractions;
-using Shared.Messaging.Outbox;
 using SubscriptionService.DAL.Repositories;
 using SubscriptionService.Domain.Entities;
 
@@ -14,13 +9,12 @@ public sealed class PaymentSucceededHandler : IIntegrationEventHandler<PaymentSu
 {
     private readonly IPlanRepository _plans;
     private readonly ISubscriptionRepository _subs;
-    private readonly IOutboxRepository _outbox;
 
-    public PaymentSucceededHandler(IPlanRepository plans, ISubscriptionRepository subs, IOutboxRepository outbox)
+    public PaymentSucceededHandler(IPlanRepository plans, ISubscriptionRepository subs)
+
     {
         _plans = plans;
         _subs = subs;
-        _outbox = outbox;
     }
 
     public async Task HandleAsync(PaymentSucceededEvent evt, CancellationToken ct)
@@ -54,35 +48,7 @@ public sealed class PaymentSucceededHandler : IIntegrationEventHandler<PaymentSu
             CurrentPeriodEnd = end
         };
 
-        var subId = await _subs.InsertAsync(sub, ct);
-
-        // Outbox event Subscription.Activated (optionnel mais très utile)
-        var messageId = Guid.NewGuid();
-        var activated = new SubscriptionActivatedEvent
-        {
-            SubscriptionId = subId,
-            UserId = evt.UserId,
-            PlanId = plan.Id,
-            PlanCode = plan.Code,
-            Features = new PlanFeatures(),
-            CurrentPeriodStart = now,
-            CurrentPeriodEnd = end
-        };
-
-        var env = new EventEnvelope<SubscriptionActivatedEvent>(
-            Type: EventTypes.Subscriptions.SubscriptionActivated,
-            Version: EventTypes.V1,
-            OccurredOn: DateTimeOffset.UtcNow,
-            Data: activated,
-            MessageId: messageId
-        );
-
-        var payloadJson = JsonSerializer.Serialize(env, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
-
-        await _outbox.AddAsync(messageId, EventTypes.Subscriptions.SubscriptionActivated, payloadJson, "subscription", subId, ct);
+        await _subs.InsertAsync(sub, ct);
     }
 }
 

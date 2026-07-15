@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using Dapper;
 using System.Data;
 using Microsoft.Extensions.Hosting;
@@ -58,7 +59,7 @@ public sealed class OutboxPublisherHostedService : BackgroundService
         }
     }
 
-    private async Task<int> PublishBatchAsync(CancellationToken ct)
+    internal async Task<int> PublishBatchAsync(CancellationToken ct)
     {
         using var cn = _db.Create();
         if (cn.State != ConnectionState.Open) cn.Open();
@@ -111,13 +112,11 @@ public sealed class OutboxPublisherHostedService : BackgroundService
                     exchange: _mq.ExchangeName,
                     routingKey: routingKey,
                     body: body,
-                    headers: new Dictionary<string, object>
-                    {
-                        ["event_type"] = r.Type,
-                        ["message_id"] = r.MessageId.ToString()
-                    },
+headers: BuildHeaders(r),
                     ct: ct
                 );
+
+                _log.LogInformation("Published outbox message {MessageId} ({EventType}) with routing key {RoutingKey}", r.MessageId, r.Type, routingKey);
 
                 await cn.ExecuteAsync(
                     """
@@ -138,6 +137,10 @@ public sealed class OutboxPublisherHostedService : BackgroundService
                 _log.LogError(ex, "Failed publishing outbox id={Id}, type={Type}", r.Id, r.Type);
 
                 var attempts = r.Attempts + 1;
+                if (attempts >= _mq.MaxPublishAttempts)
+                {
+                    _log.LogCritical("Outbox message {MessageId} ({EventType}) reached failed state after {Attempts} attempts", r.MessageId, r.Type, attempts);
+                }
                 var retryDelaySeconds = Math.Min(
                     _mq.RetryBaseDelaySeconds * (int)Math.Pow(2, Math.Min(attempts - 1, 8)),
                     3600);
@@ -170,5 +173,46 @@ public sealed class OutboxPublisherHostedService : BackgroundService
         tx.Commit();
         return rows.Count;
     }
-}
+
+    internal static Dictionary<string, object> BuildHeaders(OutboxRow row)
+    {
+        var headers = new Dictionary<string, object>
+        {
+            ["event_type"] = row.Type,
+            ["message_id"] = row.MessageId.ToString()
+        };
+
+        try
+        {
+            using var document = JsonDocument.Parse(row.Payload);
+            if (!document.RootElement.TryGetProperty("data", out var data))
+            {
+                return headers;
+            }
+
+            AddOptionalHeader(data, "correlationId", "correlation_id", headers);
+            AddOptionalHeader(data, "causationId", "causation_id", headers);
+            AddOptionalHeader(data, "sourceService", "producer", headers);
+        }
+        catch (JsonException)
+        {
+            // The consumer will route malformed payloads to its DLQ.
+        }
+
+        return headers;
+    }
+
+    private static void AddOptionalHeader(
+        JsonElement data,
+        string propertyName,
+        string headerName,
+        IDictionary<string, object> headers)
+    {
+        if (data.TryGetProperty(propertyName, out var value) &&
+            value.ValueKind is not JsonValueKind.Null &&
+            !string.IsNullOrWhiteSpace(value.ToString()))
+        {
+            headers[headerName] = value.ToString();
+        }
+    }}
 

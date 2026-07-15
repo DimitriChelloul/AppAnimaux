@@ -1,10 +1,6 @@
-using System.Text.Json;
 using AdvertisingService.BLL.Models;
 using AdvertisingService.DAL.Repositories;
 using AdvertisingService.Domain.Entities;
-using Shared.Contracts.Events.Advertising;
-using Shared.Contracts.Messaging;
-using Shared.Messaging.Outbox;
 
 namespace AdvertisingService.BLL.Services;
 
@@ -19,13 +15,8 @@ public sealed class AdvertisingAppService : IAdvertisingAppService
     };
 
     private readonly IAdvertisingRepository _ads;
-    private readonly IOutboxRepository _outbox;
 
-    public AdvertisingAppService(IAdvertisingRepository ads, IOutboxRepository outbox)
-    {
-        _ads = ads;
-        _outbox = outbox;
-    }
+    public AdvertisingAppService(IAdvertisingRepository ads) => _ads = ads;
 
     public async Task<AdCampaignResponse> CreateCampaignAsync(Guid advertiserUserId, CreateAdCampaignRequest request, CancellationToken ct)
     {
@@ -125,12 +116,12 @@ public sealed class AdvertisingAppService : IAdvertisingAppService
     }
 
     public Task<AdInteractionResponse?> TrackImpressionAsync(TrackAdInteractionRequest request, CancellationToken ct)
-        => TrackAsync(request, "impression", EventTypes.Advertising.ImpressionTracked, ct);
+        => TrackAsync(request, "impression", ct);
 
     public Task<AdInteractionResponse?> TrackClickAsync(TrackAdInteractionRequest request, CancellationToken ct)
-        => TrackAsync(request, "click", EventTypes.Advertising.ClickTracked, ct);
+        => TrackAsync(request, "click", ct);
 
-    private async Task<AdInteractionResponse?> TrackAsync(TrackAdInteractionRequest request, string interactionType, string eventType, CancellationToken ct)
+    private async Task<AdInteractionResponse?> TrackAsync(TrackAdInteractionRequest request, string interactionType, CancellationToken ct)
     {
         var interaction = new AdInteraction
         {
@@ -150,65 +141,9 @@ public sealed class AdvertisingAppService : IAdvertisingAppService
         {
             return null;
         }
-
-        await PublishInteractionEventAsync(tracked, eventType, ct);
         return ToResponse(tracked);
     }
 
-    private async Task PublishInteractionEventAsync(AdInteraction interaction, string eventType, CancellationToken ct)
-    {
-        var messageId = Guid.NewGuid();
-
-        string payloadJson;
-        if (interaction.InteractionType == "click")
-        {
-            var evt = new AdClickTrackedEvent
-            {
-                CampaignId = interaction.CampaignId,
-                CreativeId = interaction.CreativeId,
-                ViewerUserId = interaction.ViewerUserId,
-                Placement = interaction.Placement,
-                LandingUrl = interaction.LandingUrl,
-                TrackedAt = interaction.TrackedAt
-            };
-
-            payloadJson = JsonSerializer.Serialize(
-                new Shared.Contracts.Events.Abstractions.EventEnvelope<AdClickTrackedEvent>(
-                    eventType,
-                    EventTypes.V1,
-                    evt,
-                    DateTimeOffset.UtcNow,
-                    messageId),
-                JsonOptions);
-        }
-        else
-        {
-            var evt = new AdImpressionTrackedEvent
-            {
-                CampaignId = interaction.CampaignId,
-                CreativeId = interaction.CreativeId,
-                ViewerUserId = interaction.ViewerUserId,
-                Placement = interaction.Placement,
-                TrackedAt = interaction.TrackedAt
-            };
-
-            payloadJson = JsonSerializer.Serialize(
-                new Shared.Contracts.Events.Abstractions.EventEnvelope<AdImpressionTrackedEvent>(
-                    eventType,
-                    EventTypes.V1,
-                    evt,
-                    DateTimeOffset.UtcNow,
-                    messageId),
-                JsonOptions);
-        }
-
-        await _outbox.AddAsync(messageId, eventType, payloadJson, "ad_interaction", interaction.Id, ct);
-    }
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
 
     private static void ValidateCampaign(CreateAdCampaignRequest request)
     {

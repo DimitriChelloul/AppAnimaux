@@ -43,7 +43,6 @@ builder.Services.AddScoped<IPaymentAuditLogRepository, PaymentAuditLogRepository
 builder.Services.AddScoped<IPaymentUnitOfWork, PaymentUnitOfWork>();
 
 builder.Services.AddScoped<IPaymentAppService, PaymentAppService>();
-builder.Services.AddScoped<SubscriptionEventPublisher>();
 builder.Services.AddScoped<IUserSubscriptionService, UserSubscriptionService>();
 builder.Services.AddScoped<IProfessionalSubscriptionService, ProfessionalSubscriptionService>();
 builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();

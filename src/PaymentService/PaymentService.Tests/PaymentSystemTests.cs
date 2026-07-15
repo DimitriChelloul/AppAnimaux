@@ -11,7 +11,6 @@ using PaymentService.DAL.Interfaces;
 using PaymentService.DAL.Repositories;
 using PaymentService.Domain.Entities;
 using PaymentService.Domain.Enums;
-using Shared.Messaging.Outbox;
 using Xunit;
 
 public sealed class PaymentSystemTests
@@ -87,13 +86,6 @@ public sealed class PaymentSystemTests
         Assert.Equal("true", entitlements.Entitlements["professional_verified_badge_enabled"]);
     }
 
-    [Fact]
-    public async Task Subscription_events_are_written_to_outbox_for_rabbitmq()
-    {
-        var env = TestEnvironment.Create();
-        await env.Professionals.UpsertFromStripeAsync(env.ProfessionalId, PlanCode.ProBasic, "cus_1", "sub_1", SubscriptionStatus.Active, null, null, CancellationToken.None);
-        Assert.Contains(env.Outbox.Messages, x => x.Type == "ProfessionalSubscriptionCreated");
-    }
 
     [Fact]
     public void Security_requires_user_identity_for_user_endpoints()
@@ -105,7 +97,6 @@ public sealed class PaymentSystemTests
     {
         public Guid UserId { get; } = Guid.NewGuid();
         public Guid ProfessionalId { get; } = Guid.NewGuid();
-        public FakeOutbox Outbox { get; } = new();
         public ISubscriptionEntitlementService Entitlements { get; private set; } = default!;
         public IProfessionalSubscriptionService Professionals { get; private set; } = default!;
         public IApplePurchaseService Apple { get; private set; } = default!;
@@ -122,11 +113,10 @@ public sealed class PaymentSystemTests
             var receipts = new FakeReceipts();
             var webhooks = new FakeWebhookEvents();
             var invoices = new FakeInvoices();
-            var publisher = new SubscriptionEventPublisher(env.Outbox);
             var stripe = new StripeBillingService(new HttpClient(), Options.Create(new StripeOptions()), NullLogger<StripeBillingService>.Instance);
             env.Entitlements = new SubscriptionEntitlementService(users, pros, plans, ents);
-            var userSvc = new UserSubscriptionService(users, plans, env.Entitlements, publisher);
-            env.Professionals = new ProfessionalSubscriptionService(pros, plans, env.Entitlements, stripe, publisher);
+            var userSvc = new UserSubscriptionService(users, plans);
+            env.Professionals = new ProfessionalSubscriptionService(pros, plans, stripe);
             env.Apple = new ApplePurchaseService(Options.Create(new AppleOptions()), plans, receipts, userSvc);
             env.Google = new GooglePurchaseService(Options.Create(new GooglePlayOptions { PackageName = "com.appanimaux.mobile" }), plans, receipts, userSvc);
             env.Webhooks = new SubscriptionWebhookService(webhooks, stripe, env.Apple, env.Google, env.Professionals, invoices);
@@ -188,10 +178,3 @@ public sealed class PaymentSystemTests
     private sealed class FakeReceipts : IExternalPurchaseReceiptRepository { public Task InsertAsync(ExternalPurchaseReceipt receipt, CancellationToken ct) => Task.CompletedTask; }
     private sealed class FakeInvoices : ISubscriptionInvoiceRepository { public Task UpsertAsync(SubscriptionInvoice invoice, CancellationToken ct) => Task.CompletedTask; }
     private sealed class FakeWebhookEvents : IWebhookEventRepository { public Task<Guid> InsertAsync(WebhookEvent webhookEvent, CancellationToken ct) => Task.FromResult(webhookEvent.Id); public Task MarkProcessedAsync(Guid id, CancellationToken ct) => Task.CompletedTask; }
-
-    private sealed class FakeOutbox : IOutboxRepository
-    {
-        public List<(Guid MessageId, string Type)> Messages { get; } = [];
-        public Task AddAsync(Guid messageId, string type, string payloadJson, string? aggregateType, Guid? aggregateId, CancellationToken ct) { Messages.Add((messageId, type)); return Task.CompletedTask; }
-    }
-}

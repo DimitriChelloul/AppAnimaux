@@ -47,22 +47,6 @@ public sealed class HelpRequestAppService : IHelpRequestAppService
             ct);
 
         var created = await GetAsync(id, ct) ?? throw new InvalidOperationException("Help request could not be loaded.");
-        await AddOutboxAsync(
-            EventTypes.HelpRequests.HelpRequestCreated,
-            new HelpRequestCreatedEvent
-            {
-                HelpRequestId = id,
-                RequesterUserId = requesterUserId,
-                PetId = request.PetId,
-                Title = created.HelpRequest.Title,
-                HelpType = created.HelpRequest.HelpType,
-                City = created.HelpRequest.City,
-                Status = created.HelpRequest.Status,
-                SourceService = "HelpRequestService"
-            },
-            "help_request",
-            id,
-            ct);
 
         return created;
     }
@@ -129,40 +113,11 @@ public sealed class HelpRequestAppService : IHelpRequestAppService
         return updated ? await GetAsync(id, ct) : null;
     }
 
-    public async Task<bool> PublishAsync(Guid requesterUserId, Guid id, CancellationToken ct)
-    {
-        var published = await _requests.SetStatusAsync(id, requesterUserId, "published", close: false, ct);
-        if (!published)
-        {
-            return false;
-        }
+    public Task<bool> PublishAsync(Guid requesterUserId, Guid id, CancellationToken ct)
+        => _requests.SetStatusAsync(id, requesterUserId, "published", close: false, ct);
 
-        var helpRequest = await _requests.GetByIdAsync(id, ct);
-        if (helpRequest is not null)
-        {
-            await AddOutboxAsync(
-                EventTypes.HelpRequests.HelpRequestPublished,
-                new HelpRequestPublishedEvent
-                {
-                    HelpRequestId = helpRequest.Id,
-                    RequesterUserId = helpRequest.RequesterUserId,
-                    PetId = helpRequest.PetId,
-                    Title = helpRequest.Title,
-                    HelpType = helpRequest.HelpType,
-                    City = helpRequest.City,
-                    Latitude = helpRequest.Latitude,
-                    Longitude = helpRequest.Longitude,
-                    SourceService = "HelpRequestService"
-                },
-                "help_request",
-                id,
-                ct);
-        }
-
-        return true;
-    }
-
-    public Task<bool> CancelAsync(Guid requesterUserId, Guid id, CancellationToken ct) => _requests.SetStatusAsync(id, requesterUserId, "cancelled", close: true, ct);
+    public Task<bool> CancelAsync(Guid requesterUserId, Guid id, CancellationToken ct)
+        => _requests.SetStatusAsync(id, requesterUserId, "cancelled", close: true, ct);
 
     public async Task<HelpOffer?> AddOfferAsync(Guid helperUserId, Guid helpRequestId, CreateHelpOfferRequest request, CancellationToken ct)
     {
@@ -223,30 +178,8 @@ public sealed class HelpRequestAppService : IHelpRequestAppService
 
     public Task<bool> SetInProgressAsync(Guid requesterUserId, Guid id, CancellationToken ct) => _requests.SetStatusAsync(id, requesterUserId, "in_progress", close: false, ct);
 
-    public async Task<bool> CompleteAsync(Guid requesterUserId, Guid id, CancellationToken ct)
-    {
-        var completed = await _requests.SetStatusAsync(id, requesterUserId, "completed", close: true, ct);
-        if (!completed)
-        {
-            return false;
-        }
-
-        var helpRequest = await _requests.GetByIdAsync(id, ct);
-        await AddOutboxAsync(
-            EventTypes.HelpRequests.HelpMatchCompleted,
-            new HelpMatchCompletedEvent
-            {
-                HelpRequestId = id,
-                RequesterUserId = requesterUserId,
-                Title = helpRequest?.Title ?? "",
-                SourceService = "HelpRequestService"
-            },
-            "help_request",
-            id,
-            ct);
-
-        return true;
-    }
+    public Task<bool> CompleteAsync(Guid requesterUserId, Guid id, CancellationToken ct)
+        => _requests.SetStatusAsync(id, requesterUserId, "completed", close: true, ct);
 
     private static void Validate(string title, string helpType)
     {

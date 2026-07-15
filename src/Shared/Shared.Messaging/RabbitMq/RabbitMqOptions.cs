@@ -1,4 +1,4 @@
-﻿namespace Shared.Messaging.RabbitMq;
+namespace Shared.Messaging.RabbitMq;
 
 public sealed class RabbitMqOptions
 {
@@ -21,6 +21,10 @@ public sealed class RabbitMqOptions
     public ushort PrefetchCount { get; init; } = 20;
     public int MaxPublishAttempts { get; init; } = 10;
     public int RetryBaseDelaySeconds { get; init; } = 5;
+    public int MaintenanceIntervalMinutes { get; init; } = 15;
+    public int ProcessedOutboxRetentionDays { get; init; } = 7;
+    public int FailedOutboxRetentionDays { get; init; } = 30;
+    public int InboxRetentionDays { get; init; } = 30;
     public string DeadLetterExchangeName => $"{ExchangeName}.dead-letter";
     public string DeadLetterQueueName => $"{QueueName}.dead-letter";
 }

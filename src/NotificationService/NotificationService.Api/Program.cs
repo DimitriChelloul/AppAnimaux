@@ -17,6 +17,5 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseTransactionalOutbox();
-app.UseGenericMutationOutbox("NotificationService");
 
 app.Run();

@@ -32,7 +32,6 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseTransactionalOutbox();
-app.UseGenericMutationOutbox("MediaService");
 app.MapControllers();
 
 app.Run();

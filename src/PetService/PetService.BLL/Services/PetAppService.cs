@@ -1,20 +1,14 @@
 using PetService.BLL.Models;
 using PetService.DAL.Repositories;
 using PetService.Domain.Entities;
-using Shared.Messaging.Outbox;
 
 namespace PetService.BLL.Services;
 
 public sealed class PetAppService : IPetAppService
 {
     private readonly IPetRepository _pets;
-    private readonly IOutboxRepository _outbox;
 
-    public PetAppService(IPetRepository pets, IOutboxRepository outbox)
-    {
-        _pets = pets;
-        _outbox = outbox;
-    }
+    public PetAppService(IPetRepository pets) => _pets = pets;
 
     public Task<IReadOnlyCollection<Pet>> GetMineAsync(Guid ownerUserId, CancellationToken ct)
     {
@@ -57,8 +51,6 @@ public sealed class PetAppService : IPetAppService
                 Notes = NormalizeOptional(request.Notes)
             },
             ct);
-
-        await AddOutboxAsync("Created", new { PetId = id, OwnerUserId = ownerUserId }, id, ct);
         return await GetAsync(ownerUserId, id, ct) ?? throw new InvalidOperationException("Pet could not be loaded.");
     }
 
@@ -87,14 +79,12 @@ public sealed class PetAppService : IPetAppService
             ct);
 
         if (!updated) return null;
-        await AddOutboxAsync("Updated", new { PetId = petId, OwnerUserId = ownerUserId }, petId, ct);
         return await GetAsync(ownerUserId, petId, ct);
     }
 
     public async Task<bool> DeleteAsync(Guid ownerUserId, Guid petId, CancellationToken ct)
     {
         var deleted = await _pets.DeleteAsync(petId, ownerUserId, ct);
-        if (deleted) await AddOutboxAsync("Deleted", new { PetId = petId, OwnerUserId = ownerUserId }, petId, ct);
         return deleted;
     }
 
@@ -111,22 +101,13 @@ public sealed class PetAppService : IPetAppService
         {
             await _pets.SetMainPhotoAsync(petId, ownerUserId, request.MediaId, request.MediaUrl, ct);
         }
-
-        await AddOutboxAsync("PhotoAdded", new { PetId = petId, PhotoId = photo.Id, request.MediaId }, petId, ct);
         return photo;
     }
 
     public async Task<bool> SetMainPhotoAsync(Guid ownerUserId, Guid petId, SetMainPhotoRequest request, CancellationToken ct)
     {
         var updated = await _pets.SetMainPhotoAsync(petId, ownerUserId, request.MediaId, request.MediaUrl, ct);
-        if (updated) await AddOutboxAsync("MainPhotoChanged", new { PetId = petId, request.MediaId }, petId, ct);
         return updated;
-    }
-
-    private async Task AddOutboxAsync(string eventName, object data, Guid aggregateId, CancellationToken ct)
-    {
-        var message = OutboxMessageFactory.Create("PetService", eventName, data);
-        await _outbox.AddAsync(message.MessageId, message.EventType, message.Payload, "pet", aggregateId, message.OccurredOn, ct);
     }
 
     private static void Validate(string name, string species)
